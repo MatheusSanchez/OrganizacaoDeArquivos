@@ -109,10 +109,7 @@ Arquivo le_dados(char * nome_arquivo) {
 			((novo.registros_lidos + n_registros_lidos)->data_final[10]) = '\0';
 			auxiliar = fgetc(pa);
 			printf("data fim %s\n", (novo.registros_lidos + n_registros_lidos)->data_final);
-		}
-
-		//printf("%d\n", 	fgetc(pa));
-		//fgetc(pa);
+		}	
 
 
 		n_registros_lidos++;
@@ -154,16 +151,15 @@ FILE * arquivo_saida(Arquivo *entrada) {
 
 
 	FILE * saida;
-	int disponiveis, i, j, cabo = TABOM; // 0
 
-	saida = fopen("Saida.txt", "w+");
+
+	saida = fopen("saida2.text", "wb");
 	//cabecalho
 	//fprintf(saida, "%c %d;", entrada.status, entrada.topo_pilha);
 	//printf("%d\n",entrada->n_registros_lidos);
 
 	for (int i = 0; i < entrada->n_registros_lidos; ++i){
 		
-
 		fwrite(&(entrada->registros_lidos[i].codigo_escola), sizeof(int), 1, saida);
 		fwrite(&entrada->registros_lidos[i].data_inicio, sizeof(char), 10, saida);
 		fwrite(&entrada->registros_lidos[i].data_final, sizeof(char), 10, saida);
@@ -174,6 +170,56 @@ FILE * arquivo_saida(Arquivo *entrada) {
 		fwrite(&entrada->registros_lidos[i].indicador_tamanho_endereco, sizeof(int), 1, saida);
 		fwrite(&entrada->registros_lidos[i].endereco, sizeof(char), entrada->registros_lidos[i].indicador_tamanho_endereco, saida);
 		
-	}		
+		/*
+		fprintf(saida, "%d", entrada->registros_lidos[i].codigo_escola); // gravando codigo da escola	
+ 		fprintf(saida, "%s%s", entrada->registros_lidos[i].data_inicio,entrada->registros_lidos[i].data_final); // gravando as datas	
+ 		fprintf(saida, "%d", entrada->registros_lidos[i].indicador_tamanho_escola); // gravando indicador de tamanho do nome da escola
+ 		fprintf(saida, "%s", entrada->registros_lidos[i].nome_escola); // gravando nome da escola
+ 		fprintf(saida, "%d", entrada->registros_lidos[i].indicador_tamanho_municipio); // gravando indicador de tamanho do nome da escola
+ 		fprintf(saida, "%s", entrada->registros_lidos[i].municipio); // gravando nome da escola
+ 		fprintf(saida, "%d", entrada->registros_lidos[i].indicador_tamanho_endereco); // gravando indicador de tamanho do nome da escola
+ 		fprintf(saida, "%s", entrada->registros_lidos[i].endereco); // gravando nome da escola
+ 		*/
+	}	
+	/*
+	fclose(saida);
+		Não deveriamos fechar o arquivo ?
+		Porque a função tem que retornar um ponteiro pra ele ??
+	*/
 	return saida;
+}
+
+void exibe_registros(){
+
+	int codigo_escola;
+	char data_ini[11];
+	char data_fim[11];
+	char nome_escola[10000];
+	int tam_nome;
+	int tam_municipio;
+
+	data_ini[10] = data_fim[10] = '\0';
+
+	char teste[113];
+	FILE * saida;
+	saida = fopen("saida2.text", "rb");
+
+	while(1){
+
+		fread(&codigo_escola, sizeof(int), 1, saida);
+		fread(data_ini, sizeof(char), 10, saida);
+		fread(data_fim, sizeof(char), 10, saida);
+		fread(&tam_nome, sizeof(int), 1, saida);
+		fread(nome_escola, sizeof(char), tam_nome, saida);
+		fread(&tam_municipio, sizeof(int), 1, saida);
+
+		nome_escola[tam_nome] = '\0';
+
+		printf("%d %s %s %d %s %d\n", codigo_escola,data_ini,data_fim,tam_nome,nome_escola,tam_municipio);
+
+		exit(0);
+	}
+
+
+	fclose(saida);
 }

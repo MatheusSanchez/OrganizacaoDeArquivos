@@ -10,8 +10,17 @@ int main (int argc, char ** argv) {
 	nome_arquivo = *(argv + 2);
 
 	printf("Nome do Arquivo %s \n", nome_arquivo);
-	printf("Função desta bilola %d \n", funcionalidade);
+	printf("Função %d \n", funcionalidade);
+
+	if(funcionalidade == 1){ //leitura e gravação de registro
+		Arquivo dados_brutos = le_dados(nome_arquivo);
+		arquivo_saida(&dados_brutos);
+
+	}else if(funcionalidade == 2){ // exibição de todos os registros no terminal
+		exibe_registros();
+	}
 	
-	Arquivo dados_brutos = le_dados(nome_arquivo);
-	arquivo_saida(&dados_brutos);
+	
+
+
 }

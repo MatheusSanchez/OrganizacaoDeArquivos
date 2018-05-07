@@ -19,6 +19,9 @@ main.o: main.c
 run: main
 	./main 1 entrada.csv
 
+run2: main
+	./main 2	
+
 clean: 
 	rm -rf *o main
 
