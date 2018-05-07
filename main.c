@@ -13,5 +13,5 @@ int main (int argc, char ** argv) {
 	printf("Função desta bilola %d \n", funcionalidade);
 	
 	Arquivo dados_brutos = le_dados(nome_arquivo);
-	//arquivo_saida(dados_brutos);
+	arquivo_saida(dados_brutos);
 }
