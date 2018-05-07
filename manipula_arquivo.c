@@ -28,11 +28,11 @@ char * le_tamanho_variavel(FILE * posicao_atual, int * tamanho_campo) {
 	if (n_letras == 0) {
 		palavra_lida = realloc(palavra_lida, n_letras + 1);
 		*(palavra_lida + n_letras) = ';';
-		*tamanho_campo = n_letras + 1;
+		*tamanho_campo = n_letras ;
 	} else {
 		palavra_lida = realloc(palavra_lida, n_letras + 1);
 		*(palavra_lida + n_letras) = '\0';
-		*tamanho_campo = n_letras + 1;
+		*tamanho_campo = n_letras ;
 	}
 	
 	printf("%s%c \n", palavra_lida,atual);
@@ -118,85 +118,62 @@ Arquivo le_dados(char * nome_arquivo) {
 		n_registros_lidos++;
 		
 	}
-	
+	novo.n_registros_lidos = n_registros_lidos;
 	return novo;
 }
 
-FILE * arquivo_saida(Arquivo entrada) {
+// FILE * arquivo_saida(Arquivo *entrada) {
+
+
+// 	FILE * saida;
+// 	int disponiveis, i, j, cabo = TABOM; // 0
+
+// 	saida = fopen("Saida.csv", "w+");
+// 	//cabecalho
+// 	//fprintf(saida, "%c %d;", entrada.status, entrada.topo_pilha);
+// 	printf("%d\n",entrada->n_registros_lidos);
+
+// 	for (int i = 0; i < entrada->n_registros_lidos; ++i){
+// 		printf("VOU GRAVAR ESSA PORRA\n");
+
+// 		fprintf(saida, "%d", entrada->registros_lidos[i].codigo_escola); // gravando codigo da escola	
+// 		fprintf(saida, "%s%s", entrada->registros_lidos[i].data_inicio,entrada->registros_lidos[i].data_final); // gravando as datas	
+// 		fprintf(saida, "%d", entrada->registros_lidos[i].indicador_tamanho_escola); // gravando indicador de tamanho do nome da escola
+// 		fprintf(saida, "%s", entrada->registros_lidos[i].nome_escola); // gravando nome da escola
+// 		fprintf(saida, "%d", entrada->registros_lidos[i].indicador_tamanho_municipio); // gravando indicador de tamanho do nome da escola
+// 		fprintf(saida, "%s", entrada->registros_lidos[i].municipio); // gravando nome da escola
+// 		fprintf(saida, "%d", entrada->registros_lidos[i].indicador_tamanho_endereco); // gravando indicador de tamanho do nome da escola
+// 		fprintf(saida, "%s", entrada->registros_lidos[i].endereco); // gravando nome da escola
+
+
+// 	}		
+// 	return saida;
+// }
+
+FILE * arquivo_saida(Arquivo *entrada) {
 
 
 	FILE * saida;
 	int disponiveis, i, j, cabo = TABOM; // 0
-	
 
-	saida = fopen("Saida.csv", "w+");
-	
-	fprintf(saida, "%c %d;", entrada.status, entrada.topo_pilha);
-	
-	Registro *caminho = entrada.registros_lidos;
+	saida = fopen("Saida.txt", "w+");
+	//cabecalho
+	//fprintf(saida, "%c %d;", entrada.status, entrada.topo_pilha);
+	//printf("%d\n",entrada->n_registros_lidos);
 
-	for (i = 0; i < entrada.n_registros_lidos; i++) {
-		disponiveis = TAMANHOREGISTRO - OCUPADOS;
-		fprintf(saida, "%d;", (caminho + i)->codigo_escola);
-		// verifica se os registros são nulos para imprimir da forma correta
-		if ((caminho + i)->data_inicio[0] == ';') {
-			fprintf(saida, "%s;", DATANULA);
-		} else {
-			fprintf(saida, "%s;", (caminho + i)->data_inicio);
-		}
-		if ((caminho + i)->data_final[0] == ';') {
-			fprintf(saida, "%s;", DATANULA);
-		} else {
-			fprintf(saida, "%s;", (caminho + i)->data_final);
-		}
-		// verifica se a string lida cabe no espaço que sobrou no registro
-		if ((caminho + i)->indicador_tamanho_escola < disponiveis) {
-			fprintf(saida, "%d", (caminho + i)->indicador_tamanho_escola);
-			fprintf(saida, "%s;", (caminho + i)->nome_escola);
-			disponiveis -= (caminho + i)->indicador_tamanho_escola;
-		// caso não caiba, trunca a string e seta a flag cabô como DEURUIM	
-		} else {
-			for (j = 0; j < disponiveis; j++) {
-				fprintf(saida, "%d", disponiveis);
-				fprintf(saida, "%c", *(((caminho + i)->nome_escola) + j));
-			}
-			fprintf(saida, ";");
-			cabo = DEURUIM;
-		}
-		// se deu ruim, imprime o tamanho dos próximos campos nulos e 
-		// segue para a próxima iteração
-		if (cabo == DEURUIM) {
-			fprintf(saida, "0;0");
-			continue;
-		} else {
-			// as verificações são análogas ao caso acima
-			if ((caminho + i)->indicador_tamanho_municipio < disponiveis) {
-				fprintf(saida, "%d", (caminho + i)->indicador_tamanho_municipio);
-				fprintf(saida, "%s;", (caminho + i)->municipio);
-				disponiveis -= (caminho + i)->indicador_tamanho_municipio;
-			} else {
-				for (j = 0; j < disponiveis; j++) {
-					fprintf(saida, "%d", disponiveis);
-					fprintf(saida, "%c", *(((caminho + i)->municipio) + j));
-				}
-				fprintf(saida, ";");
-				cabo = DEURUIM;
-			}
-		}
-		if (cabo == DEURUIM) {
-			fprintf(saida, "0");
-			continue;
-		} else {
-			if ((caminho + i)->indicador_tamanho_endereco < disponiveis) {
-				fprintf(saida, "%d", (caminho + i)->indicador_tamanho_endereco);
-				fprintf(saida, "%s;", (caminho + i)->endereco);
-			} else {
-				for (j = 0; j < disponiveis; j++) {
-					fprintf(saida, "%d", disponiveis);
-					fprintf(saida, "%c", *(((caminho + i)->endereco) + j));
-				}
-			}
-		}
-	}
+	for (int i = 0; i < entrada->n_registros_lidos; ++i){
+		
+
+		fwrite(&(entrada->registros_lidos[i].codigo_escola), sizeof(int), 1, saida);
+		fwrite(&entrada->registros_lidos[i].data_inicio, sizeof(char), 10, saida);
+		fwrite(&entrada->registros_lidos[i].data_final, sizeof(char), 10, saida);
+		fwrite(&entrada->registros_lidos[i].indicador_tamanho_escola, sizeof(int), 1, saida);
+		fwrite(&entrada->registros_lidos[i].nome_escola, sizeof(char), entrada->registros_lidos->indicador_tamanho_escola, saida);
+		fwrite(&entrada->registros_lidos[i].indicador_tamanho_municipio, sizeof(int), 1, saida);
+		fwrite(&entrada->registros_lidos[i].municipio, sizeof(char), entrada->registros_lidos[i].indicador_tamanho_municipio, saida);
+		fwrite(&entrada->registros_lidos[i].indicador_tamanho_endereco, sizeof(int), 1, saida);
+		fwrite(&entrada->registros_lidos[i].endereco, sizeof(char), entrada->registros_lidos[i].indicador_tamanho_endereco, saida);
+		
+	}		
 	return saida;
 }
