@@ -1,13 +1,15 @@
 #include "manipula_arquivo.h"
 
 char * le_tamanho_variavel(FILE * posicao_atual, int * tamanho_campo) {
-	char atual, * palavra_lida = NULL;
+	char atual, *palavra_lida = NULL;
 	int n_letras = 0;
-	pa = fopen(posicao_atual, "r");
+	FILE * pa;
+	pa = posicao_atual;
 	
 	do {
 		// le char a char o que está no arquivo
 		atual = fgetc(pa);
+		printf("ASDDASHSADIJHASD\n");
 		// enquanto não chega no delimitador realoca a string lida e atribui
 		// o caractere à última posicao 
 		if (atual != ';') {
@@ -15,7 +17,7 @@ char * le_tamanho_variavel(FILE * posicao_atual, int * tamanho_campo) {
 			*(palavra_lida + n_letras) = atual;
 			n_letras++;
 		}
-	} while (!(feof(posicao_atual) && atual != ';');
+	} while (!(feof(posicao_atual) && atual != ';'));
 	// delimita a string lida
 	if (n_letras == 0) {
 		palavra_lida = realloc(palavra_lida, n_letras + 1);
@@ -31,62 +33,85 @@ char * le_tamanho_variavel(FILE * posicao_atual, int * tamanho_campo) {
 }
 
 Arquivo le_dados(char * nome_arquivo) {
-	FILE * pa;
+
+	FILE * pa = NULL;
 	Arquivo novo;
 	int n_registros_lidos = 0;
 	char auxiliar;
 	pa = fopen(nome_arquivo, "r");
+	novo.registros_lidos = NULL;
+	if(pa == NULL){
+		printf("CABOU TUDO AQUI\n");
+		exit(0);
+	}
+
 	do {
+		printf("VAI DESGRACA\n");
+
 		novo.registros_lidos = realloc(novo.registros_lidos, n_registros_lidos + 1);
+		printf("MAROTAOTOAOTOAOTAOO\n");
 		// acessa o Arquivo no vetor de registros e salva em cada elemento
 		// da struct o que lhe é destinado
-		fread((novo.registros_lidos + n_registros_lidos)->codigo_escola, 1, 4, pa);
-		fgetc(pa);
+		fread(&((novo.registros_lidos + n_registros_lidos)->codigo_escola), sizeof(int), 1, pa);
+		
+		printf("cODIGO %d %c\n",novo.registros_lidos[0].codigo_escola,fgetc(pa));
+		exit(0);
 		(novo.registros_lidos + n_registros_lidos)->nome_escola = 
-				le_tamanho_variavel(pa, (novo.registros_lidos + n_registros_lidos)->indicador_tamanho_escola);
+				le_tamanho_variavel(pa, &((novo.registros_lidos + n_registros_lidos)->indicador_tamanho_escola));
 		(novo.registros_lidos + n_registros_lidos)->municipio = 
-				le_tamanho_variavel(pa, (novo.registros_lidos + n_registros_lidos)->indicador_tamanho_municipio);
+				le_tamanho_variavel(pa, &((novo.registros_lidos + n_registros_lidos)->indicador_tamanho_municipio));
 		(novo.registros_lidos + n_registros_lidos)->endereco = 
-				le_tamanho_variavel(pa, (novo.registros_lidos + n_registros_lidos)->indicador_tamanho_endereco);
+				le_tamanho_variavel(pa, &((novo.registros_lidos + n_registros_lidos)->indicador_tamanho_endereco));
+	
 		auxiliar = fgetc(pa);
+
 		if (auxiliar == ';') {
-			novo.registros_lidos + n_registros_lidos)->data_inicio = ';'
+			((novo.registros_lidos) + n_registros_lidos)->data_inicio[0] = ';';
 		} else {
-			ungetc(pa);
-			fread((novo.registros_lidos + n_registros_lidos)->data_inicio, 1, 10, pa);	
-			*((novo.registros_lidos + n_registros_lidos)->(data_inicio + 10)) = '\0';
+
+			(novo.registros_lidos + n_registros_lidos)->data_inicio[0] = auxiliar;
+			fread((novo.registros_lidos + n_registros_lidos)->data_inicio+1, 1, 9, pa);	
+			(novo.registros_lidos + n_registros_lidos)->data_inicio[10] = '\0';
+
 		}
-		fgetc(pa);
+
+		auxiliar = fgetc(pa);
+
 		if (auxiliar == ';') {
-			novo.registros_lidos + n_registros_lidos)->data_final = ';'
+			(novo.registros_lidos + n_registros_lidos)->data_final[0] = ';';
 		} else {
-			ungetc(pa);
+			ungetc(auxiliar, pa);
 			fread((novo.registros_lidos + n_registros_lidos)->data_final, 1, 10, pa);	
-			*((novo.registros_lidos + n_registros_lidos)->(data_final + 10)) = '\0';
+			((novo.registros_lidos + n_registros_lidos)->data_final[10]) = '\0';
 		}
+		//atenção
 		fgetc(pa);
 		n_registros_lidos++;
 	} while (!feof(pa));
+	
+	return novo;
 }
 
 FILE * arquivo_saida(Arquivo entrada) {
 	FILE * saida;
 	int disponiveis, i, j, cabo = TABOM;
-	char atual;
-	saida = fopen("Saida.csv", "w+");
-	fprintf(saida, "%c %d;", &entrada.status, &entrada.topo_pilha);
 	
-	caminho = entrada.registros_lidos;
+
+	saida = fopen("Saida.csv", "w+");
+	fprintf(saida, "%c %d;", entrada.status, entrada.topo_pilha);
+	
+	Registro *caminho = entrada.registros_lidos;
+
 	for (i = 0; i < entrada.n_registros_lidos; i++) {
 		disponiveis = TAMANHOREGISTRO - OCUPADOS;
 		fprintf(saida, "%d;", (caminho + i)->codigo_escola);
 		// verifica se os registros são nulos para imprimir da forma correta
-		if ((caminho + i)->data_inicio == ';') {
+		if ((caminho + i)->data_inicio[0] == ';') {
 			fprintf(saida, "%s;", DATANULA);
 		} else {
 			fprintf(saida, "%s;", (caminho + i)->data_inicio);
 		}
-		if ((caminho + i)->data_final == ';') {
+		if ((caminho + i)->data_final[0] == ';') {
 			fprintf(saida, "%s;", DATANULA);
 		} else {
 			fprintf(saida, "%s;", (caminho + i)->data_final);
@@ -140,6 +165,5 @@ FILE * arquivo_saida(Arquivo entrada) {
 			}
 		}
 	}
+	return saida;
 }
-
-

@@ -28,17 +28,17 @@ struct arquivo {
 	int n_registros_lidos;
 	// pode ser 0 se o arquivo foi corrompido ou 1 se está íntegro
 	char status;
-	int topo_pilha = -1;
-	Registro * registros_lidos = NULL;
+	int topo_pilha;
+	Registro * registros_lidos;
 };
 
 typedef struct arquivo Arquivo;
 
-char * le_tamanho_variavel(FILE * posicao_atual);
+char * le_tamanho_variavel(FILE * posicao_atual, int * tamanho_campo );
 
 Arquivo le_dados(char * nome_arquivo);
 
 
-
+FILE * arquivo_saida(Arquivo entrada);
 
 #endif

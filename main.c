@@ -8,7 +8,10 @@ int main (int argc, char ** argv) {
 	char * nome_arquivo;
 	
 	nome_arquivo = *(argv + 2);
+
+	printf("Nome do Arquivo %s \n", nome_arquivo);
+	printf("Função desta bilola %d \n", funcionalidade);
 	
-	dados_brutos = le_dados(nome_arquivo);
-	
+	Arquivo dados_brutos = le_dados(nome_arquivo);
+	//arquivo_saida(dados_brutos);
 }
