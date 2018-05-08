@@ -133,7 +133,7 @@ void  arquivo_saida(Arquivo *entrada) {
 	FILE * saida,*saida1;
 
 
-	saida = fopen("saida2.bin", "wb");
+	saida = fopen("saida.bin", "wb");
 	//cabecalho
 	fwrite(&entrada->status, sizeof(char), 1, saida);
 	fwrite(&entrada->topo_pilha, sizeof(int), 1, saida);
@@ -177,8 +177,7 @@ void  arquivo_saida(Arquivo *entrada) {
 	
 }
 
-void exibe_registros(){
-
+void exibe_registros(){ // função 2
 
 	int codigo_escola; 
 	
@@ -186,7 +185,7 @@ void exibe_registros(){
 	char data_fim[11];
 	
 	int tam_nome;
-	char* nome_escola = NULL;
+	char* nome_escola = NULL; 
 	
 	int tam_municipio;
 	char* municipio = NULL;
@@ -194,10 +193,9 @@ void exibe_registros(){
 	int tam_endereco;
 	char* endereco = NULL;
 	
-	char str[201];
 
 	FILE * saida;
-	saida = fopen("saida2.bin", "rb");
+	saida = fopen("saida.bin", "rb");
 	
 	fseek(saida, 0, SEEK_END);
 	int tamanho_arquivo = ftell(saida);
@@ -206,32 +204,29 @@ void exibe_registros(){
 	fseek(saida, 5, SEEK_SET); // PULA OS 5 BYTES DO REGISTRO DE CABEÇALHO
 
 
-	while(ftell(saida) < tamanho_arquivo){
+	while(ftell(saida) < tamanho_arquivo){ // enquanto houver linhas linhas para ler
 		
-		// fread(str,sizeof(char), 200, saida);
-		// //fgets(str, 112, saida);
-		// str[200] = '\0';
 
-		// printf("str = %s\n", str);
-
-		fread(&codigo_escola, sizeof(int), 1, saida);
-		fread(data_ini, sizeof(char), 10, saida);
-		fread(data_fim, sizeof(char), 10, saida);
+		fread(&codigo_escola, sizeof(int), 1, saida); // 4 bytes
+		fread(data_ini, sizeof(char), 10, saida);  // 10*1 byte
+		fread(data_fim, sizeof(char), 10, saida); // 10*1 byte
 		
 		data_ini[10] = data_fim[10] = '\0';
 		
-		fread(&tam_nome, sizeof(int), 1, saida);
+		fread(&tam_nome, sizeof(int), 1, saida); // 4 bytes
 		nome_escola = realloc(nome_escola, (tam_nome+1) * sizeof(char)); // REALLOCA A STRING COM O TAMANHO DO CAMPO +1 PARA CABER O \0
-		fread(nome_escola, sizeof(char), tam_nome, saida);
+		fread(nome_escola, sizeof(char), tam_nome, saida); // tam_nome*1 byte
 		
-		fread(&tam_municipio, sizeof(int), 1, saida);
+		fread(&tam_municipio, sizeof(int), 1, saida); // 4 bytes
 		municipio = realloc(municipio, (tam_municipio+1) * sizeof(char)); // REALLOCA A STRING COM O TAMANHO DO CAMPO +1 PARA CABER O \0
-		fread(municipio, sizeof(char), tam_municipio, saida);
+		fread(municipio, sizeof(char), tam_municipio, saida);  // tam_municipio*1 byte
 
 		fread(&tam_endereco, sizeof(int), 1, saida);
-		endereco = realloc(endereco, (tam_endereco+1) * sizeof(char)); // REALLOCA A STRING COM O TAMANHO DO CAMPO +1 PARA CABER O \0
-		
-		fread(endereco, sizeof(char), tam_endereco, saida);
+		endereco = realloc(endereco, (tam_endereco+1) * sizeof(char)); // REALLOCA A STRING COM O TAMANHO DO CAMPO +1 PARA CABER O \0	
+		fread(endereco, sizeof(char), tam_endereco, saida); // tam_endereco*1 byte
+
+
+		//total 112 bytes, tamanho do registro
 
 		//ACRESCENTA O \0 AO FINAL DAS STRINGS LIDAS
 		nome_escola[tam_nome] = '\0';
@@ -240,8 +235,6 @@ void exibe_registros(){
 
 		//PRINTA CADA REGISTRO EM 1 LINHA
 		printf("%d %s %s %d %s %d %s %d %s\n", codigo_escola,data_ini,data_fim,tam_nome,nome_escola,tam_municipio, municipio, tam_endereco, endereco);
-
-		//exit(0);
 	}
 
 
