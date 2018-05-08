@@ -39,6 +39,9 @@ char * le_tamanho_variavel(FILE * posicao_atual, int * tamanho_campo );
 Arquivo le_dados(char * nome_arquivo);
 
 
-FILE * arquivo_saida(Arquivo *entrada);
+void arquivo_saida(Arquivo *entrada);
+
+void exibe_registros();
+
 
 #endif

@@ -46,6 +46,11 @@ Arquivo le_dados(char * nome_arquivo) {
 
 
 	Arquivo novo;
+
+	//SETANDO O REGISTRO DE CABEÇALHO
+	novo.status = '1';
+	novo.topo_pilha =-1;
+
 	int n_registros_lidos = 0;
 	char auxiliar;
 	pa = fopen(nome_arquivo, "r");
@@ -115,48 +120,24 @@ Arquivo le_dados(char * nome_arquivo) {
 		n_registros_lidos++;
 		
 	}
+
+
 	novo.n_registros_lidos = n_registros_lidos;
 	return novo;
 }
 
-// FILE * arquivo_saida(Arquivo *entrada) {
+
+void  arquivo_saida(Arquivo *entrada) {
 
 
-// 	FILE * saida;
-// 	int disponiveis, i, j, cabo = TABOM; // 0
-
-// 	saida = fopen("Saida.csv", "w+");
-// 	//cabecalho
-// 	//fprintf(saida, "%c %d;", entrada.status, entrada.topo_pilha);
-// 	printf("%d\n",entrada->n_registros_lidos);
-
-// 	for (int i = 0; i < entrada->n_registros_lidos; ++i){
-// 		printf("VOU GRAVAR ESSA PORRA\n");
-
-// 		fprintf(saida, "%d", entrada->registros_lidos[i].codigo_escola); // gravando codigo da escola	
-// 		fprintf(saida, "%s%s", entrada->registros_lidos[i].data_inicio,entrada->registros_lidos[i].data_final); // gravando as datas	
-// 		fprintf(saida, "%d", entrada->registros_lidos[i].indicador_tamanho_escola); // gravando indicador de tamanho do nome da escola
-// 		fprintf(saida, "%s", entrada->registros_lidos[i].nome_escola); // gravando nome da escola
-// 		fprintf(saida, "%d", entrada->registros_lidos[i].indicador_tamanho_municipio); // gravando indicador de tamanho do nome da escola
-// 		fprintf(saida, "%s", entrada->registros_lidos[i].municipio); // gravando nome da escola
-// 		fprintf(saida, "%d", entrada->registros_lidos[i].indicador_tamanho_endereco); // gravando indicador de tamanho do nome da escola
-// 		fprintf(saida, "%s", entrada->registros_lidos[i].endereco); // gravando nome da escola
+	FILE * saida,*saida1;
 
 
-// 	}		
-// 	return saida;
-// }
-
-FILE * arquivo_saida(Arquivo *entrada) {
-
-
-	FILE * saida;
-
-
-	saida = fopen("saida2.text", "wb");
+	saida = fopen("saida2.bin", "wb");
 	//cabecalho
-	//fprintf(saida, "%c %d;", entrada.status, entrada.topo_pilha);
-	//printf("%d\n",entrada->n_registros_lidos);
+	fwrite(&entrada->status, sizeof(char), 1, saida);
+	fwrite(&entrada->topo_pilha, sizeof(int), 1, saida);
+
 
 	for (int i = 0; i < entrada->n_registros_lidos; ++i){
 		
@@ -164,60 +145,89 @@ FILE * arquivo_saida(Arquivo *entrada) {
 		fwrite(&entrada->registros_lidos[i].data_inicio, sizeof(char), 10, saida);
 		fwrite(&entrada->registros_lidos[i].data_final, sizeof(char), 10, saida);
 		fwrite(&entrada->registros_lidos[i].indicador_tamanho_escola, sizeof(int), 1, saida);
-		fwrite(&entrada->registros_lidos[i].nome_escola, sizeof(char), entrada->registros_lidos->indicador_tamanho_escola, saida);
+		fwrite(entrada->registros_lidos[i].nome_escola, sizeof(char), entrada->registros_lidos[i].indicador_tamanho_escola, saida);
 		fwrite(&entrada->registros_lidos[i].indicador_tamanho_municipio, sizeof(int), 1, saida);
-		fwrite(&entrada->registros_lidos[i].municipio, sizeof(char), entrada->registros_lidos[i].indicador_tamanho_municipio, saida);
+		fwrite(entrada->registros_lidos[i].municipio, sizeof(char), entrada->registros_lidos[i].indicador_tamanho_municipio, saida);
 		fwrite(&entrada->registros_lidos[i].indicador_tamanho_endereco, sizeof(int), 1, saida);
-		fwrite(&entrada->registros_lidos[i].endereco, sizeof(char), entrada->registros_lidos[i].indicador_tamanho_endereco, saida);
+		fwrite(entrada->registros_lidos[i].endereco, sizeof(char), entrada->registros_lidos[i].indicador_tamanho_endereco, saida);
 		
-		/*
-		fprintf(saida, "%d", entrada->registros_lidos[i].codigo_escola); // gravando codigo da escola	
- 		fprintf(saida, "%s%s", entrada->registros_lidos[i].data_inicio,entrada->registros_lidos[i].data_final); // gravando as datas	
- 		fprintf(saida, "%d", entrada->registros_lidos[i].indicador_tamanho_escola); // gravando indicador de tamanho do nome da escola
- 		fprintf(saida, "%s", entrada->registros_lidos[i].nome_escola); // gravando nome da escola
- 		fprintf(saida, "%d", entrada->registros_lidos[i].indicador_tamanho_municipio); // gravando indicador de tamanho do nome da escola
- 		fprintf(saida, "%s", entrada->registros_lidos[i].municipio); // gravando nome da escola
- 		fprintf(saida, "%d", entrada->registros_lidos[i].indicador_tamanho_endereco); // gravando indicador de tamanho do nome da escola
- 		fprintf(saida, "%s", entrada->registros_lidos[i].endereco); // gravando nome da escola
- 		*/
+		// fwrite(&(entrada->registros_lidos[i].codigo_escola), sizeof(int), 1, saida);
+		// fwrite(&entrada->registros_lidos[i].data_inicio, sizeof(char), 10, saida);
+		// fwrite(&entrada->registros_lidos[i].data_final, sizeof(char), 10, saida);
+		// fwrite(&entrada->registros_lidos[i].indicador_tamanho_escola, sizeof(int), 1, saida);
+		// fwrite(entrada->registros_lidos[i].nome_escola, sizeof(char), sizeof(entrada->registros_lidos[i].nome_escola)-1, saida);
+		// fwrite(&entrada->registros_lidos[i].indicador_tamanho_municipio, sizeof(int), 1, saida);
+		// fwrite(entrada->registros_lidos[i].municipio, sizeof(char), sizeof(entrada->registros_lidos[i].municipio)-1, saida);
+		// fwrite(&entrada->registros_lidos[i].indicador_tamanho_endereco, sizeof(int), 1, saida);
+		// fwrite(entrada->registros_lidos[i].endereco, sizeof(char), sizeof(entrada->registros_lidos[i].endereco)-1, saida);
+
+
+		// fprintf(saida1, "%d", entrada->registros_lidos[i].codigo_escola); // gravando codigo da escola	
+ 	// 	fprintf(saida1, "%s%s", entrada->registros_lidos[i].data_inicio,entrada->registros_lidos[i].data_final); // gravando as datas	
+ 	// 	fprintf(saida1, "%d", entrada->registros_lidos[i].indicador_tamanho_escola); // gravando indicador de tamanho do nome da escola
+ 	// 	fprintf(saida1, "%s", entrada->registros_lidos[i].nome_escola); // gravando nome da escola
+ 	// 	fprintf(saida1, "%d", entrada->registros_lidos[i].indicador_tamanho_municipio); // gravando indicador de tamanho do nome da escola
+ 	// 	fprintf(saida1, "%s", entrada->registros_lidos[i].municipio); // gravando nome da escola
+ 	// 	fprintf(saida1, "%d", entrada->registros_lidos[i].indicador_tamanho_endereco); // gravando indicador de tamanho do nome da escola
+ 	// 	fprintf(saida1, "%s", entrada->registros_lidos[i].endereco); // gravando nome da escola
+ 		
 	}	
-	/*
+	
 	fclose(saida);
-		Não deveriamos fechar o arquivo ?
-		Porque a função tem que retornar um ponteiro pra ele ??
-	*/
-	return saida;
+	
 }
 
 void exibe_registros(){
 
+	char status;
+	int topo_pilha;
+
 	int codigo_escola;
 	char data_ini[11];
 	char data_fim[11];
-	char nome_escola[10000];
+	char* nome_escola = NULL;
 	int tam_nome;
 	int tam_municipio;
+	char* municipio = NULL;
+	int tam_endereco;
+	char* endereco = NULL;
+	
 
-	data_ini[10] = data_fim[10] = '\0';
-
-	char teste[113];
 	FILE * saida;
-	saida = fopen("saida2.text", "rb");
+	saida = fopen("saida2.bin", "rb");
+	fread(&status, sizeof(char), 1, saida);
+	fread(&topo_pilha, sizeof(int), 1, saida);
+	printf("status = %c, topo_pilha = %d\n", status, topo_pilha);	
 
-	while(1){
+	//fseek(saida, 5, SEEK_SET);
 
+
+	while(!feof(saida)){
 		fread(&codigo_escola, sizeof(int), 1, saida);
 		fread(data_ini, sizeof(char), 10, saida);
 		fread(data_fim, sizeof(char), 10, saida);
+		data_ini[10] = data_fim[10] = '\0';
+		
 		fread(&tam_nome, sizeof(int), 1, saida);
+		nome_escola = realloc(nome_escola, (tam_nome+1) * sizeof(char));
 		fread(nome_escola, sizeof(char), tam_nome, saida);
+		
 		fread(&tam_municipio, sizeof(int), 1, saida);
+		municipio = realloc(municipio, (tam_municipio+1) * sizeof(char));
+		fread(municipio, sizeof(char), tam_municipio, saida);
+
+		fread(&tam_endereco, sizeof(int), 1, saida);
+		endereco = realloc(endereco, (tam_endereco+1) * sizeof(char));
+		fread(endereco, sizeof(char), tam_endereco, saida);
+
 
 		nome_escola[tam_nome] = '\0';
+		municipio[tam_municipio] = '\0';
+		endereco[tam_endereco] = '\0';
 
-		printf("%d %s %s %d %s %d\n", codigo_escola,data_ini,data_fim,tam_nome,nome_escola,tam_municipio);
+		printf("%d %s %s %d %s %d %s %d %s\n", codigo_escola,data_ini,data_fim,tam_nome,nome_escola,tam_municipio, municipio, tam_endereco, endereco);
 
-		exit(0);
+		
 	}
 
 
