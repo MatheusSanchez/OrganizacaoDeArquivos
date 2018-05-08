@@ -31,7 +31,7 @@ int main (int argc, char ** argv) {
 
 		
 
-		//printf("%s\n", nome_campo);
+		fclose(saida);
 
 
 	}

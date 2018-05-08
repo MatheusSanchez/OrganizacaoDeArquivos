@@ -23,7 +23,7 @@ run2: main
 	./main 2
 
 run_codEscola: main
-	./main 3 'codEscola' 35000012
+	./main 3 'codEscola' 35000024
 
 run_dataInicio: main
 	./main 3 'dataInicio' 01/02/2012

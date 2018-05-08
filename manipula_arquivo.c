@@ -182,20 +182,6 @@ void  arquivo_saida(Arquivo *entrada) {
 
 void exibe_registros(){ // função 2
 
-	int codigo_escola; 
-	
-	char data_ini[11]; // OS 10 BYTES DA DATA MAIS O \0
-	char data_fim[11];
-	
-	int tam_nome;
-	char* nome_escola = NULL; 
-	
-	int tam_municipio;
-	char* municipio = NULL;
-	
-	int tam_endereco;
-	char* endereco = NULL;
-	
 
 	FILE * saida;
 	saida = fopen("saida.bin", "rb");
@@ -209,38 +195,9 @@ void exibe_registros(){ // função 2
 
 	for(int i = 0; ftell(saida) < tamanho_arquivo; i++){ // enquanto houver linhas linhas para ler
 		
-
-
-		fread(&codigo_escola, sizeof(int), 1, saida); // 4 bytes
-		fread(data_ini, sizeof(char), 10, saida);  // 10*1 byte
-		fread(data_fim, sizeof(char), 10, saida); // 10*1 byte
+		ImprimeRegistro(saida,ftell(saida));
+		fseek(saida, TAMANHOREGISTRO, SEEK_CUR);
 		
-		data_ini[10] = data_fim[10] = '\0';
-		
-		fread(&tam_nome, sizeof(int), 1, saida); // 4 bytes
-		nome_escola = realloc(nome_escola, (tam_nome+1) * sizeof(char)); // REALLOCA A STRING COM O TAMANHO DO CAMPO +1 PARA CABER O \0
-		fread(nome_escola, sizeof(char), tam_nome, saida); // tam_nome*1 byte
-		
-		fread(&tam_municipio, sizeof(int), 1, saida); // 4 bytes
-		municipio = realloc(municipio, (tam_municipio+1) * sizeof(char)); // REALLOCA A STRING COM O TAMANHO DO CAMPO +1 PARA CABER O \0
-		fread(municipio, sizeof(char), tam_municipio, saida);  // tam_municipio*1 byte
-
-		fread(&tam_endereco, sizeof(int), 1, saida);
-		endereco = realloc(endereco, (tam_endereco+1) * sizeof(char)); // REALLOCA A STRING COM O TAMANHO DO CAMPO +1 PARA CABER O \0	
-		fread(endereco, sizeof(char), tam_endereco, saida); // tam_endereco*1 byte
-
-
-
-		//total 112 bytes, tamanho do registro
-
-		//ACRESCENTA O \0 AO FINAL DAS STRINGS LIDAS
-		nome_escola[tam_nome] = '\0';
-		municipio[tam_municipio] = '\0';
-		endereco[tam_endereco] = '\0';
-
-		fseek(saida, (TAMANHOREGISTRO*(i+1) + T_CABECALHO), SEEK_SET); // Pulando os caracteres "lixo" do registro
-		//PRINTA CADA REGISTRO EM 1 LINHA
-		printf("%d %s %s %d %s %d %s %d %s\n", codigo_escola,data_ini,data_fim,tam_nome,nome_escola,tam_municipio, municipio, tam_endereco, endereco);
 	}
 
 
@@ -253,11 +210,12 @@ void func3(FILE* saida, char* nome_campo, char* val_campo){
 	char FLAG_codEscola = 0; // 0 se não é nome da escola, 1 se é
 
 	int codigo_escola_lido;
-	int codEscola_pedido = atoi(val_campo);
+	int codigo_escola_pedido = atoi(val_campo);
+
 
 	if(strcmp("codEscola",nome_campo) == 0){ // byte 0 + cabecalho
 		b_inicial = T_CABECALHO; //byte inicial do codigo escola no primeiro registro
-		b_final = T_CABECALHO +4; //byte final do codigo escola no primeiro registro
+		b_final = T_CABECALHO + sizeof(int); //byte final do codigo escola no primeiro registro
 		FLAG_codEscola = 1;
 
 	}else if(strcmp("dataInicio",nome_campo) == 0){ 
@@ -292,25 +250,24 @@ void func3(FILE* saida, char* nome_campo, char* val_campo){
 
 		b_inicial += TAMANHOREGISTRO*i; // byte inicial do campo pedido no registro atual
 		b_final += TAMANHOREGISTRO*i; // byte final do campo pedido no registro final
-	
+		
+
 		if(FLAG_codEscola == 1){ // se o campo pedido for o codigo da escola
 			//leio do arquivo como um int
 
 			fread(&codigo_escola_lido, sizeof(int), 1, saida);
-			
+			printf("cod lido %d\n", codigo_escola_lido);
 			// se os codigos lidos e pedido foram iguais
 			if(codigo_escola_lido == codigo_escola_pedido){
-				//imprime registro
+				
 				fseek(saida, (TAMANHOREGISTRO*i)+T_CABECALHO, SEEK_SET);
-
+				//printf("Posicao atual %ld\n",ftell(saida));
 				ImprimeRegistro(saida, (TAMANHOREGISTRO*i)+T_CABECALHO);
-
-				fseek(saida, b_inicial, SEEK_SET);
 			}
 
 		}else{ // se o campo pedido for outro
 			// leio uma string
-			char* str = query(saida, b_inicial, b_final, val_campo);
+			char* str = query(saida, b_inicial, b_final);
 			
 			// e comparo com o valor do campo pedido
 			if(strcmp(val_campo, str) == 0){
@@ -323,14 +280,14 @@ void func3(FILE* saida, char* nome_campo, char* val_campo){
 			}	
 		}
 
-
-		exit(0);
+	fseek(saida, (TAMANHOREGISTRO*i+1)+T_CABECALHO, SEEK_SET);
+		
 	}	
 }
 
-char* query (FILE* fp, int b_inicial, int b_final, char* val_campo){
+char* query (FILE* fp, int b_inicial, int b_final){
 
-	// acessa o byte inicial do campo a ser lido
+
 	fseek(fp, b_inicial, SEEK_SET);
 
 	char* str = NULL;
@@ -339,15 +296,13 @@ char* query (FILE* fp, int b_inicial, int b_final, char* val_campo){
 	str[tam+1] ='\0';
 
 	fread(str, sizeof(char),tam, fp);
-
 	printf("%s\n", str);
 
+	fseek(fp, b_inicial, SEEK_SET);
 	return str;
-
 }
 
-void ImprimeRegistro(FILE* saida, int b_inicial)
-{
+void ImprimeRegistro(FILE* saida, int b_inicial){ // imprime o registro do byte inicial passado por argumento e retorna o ponteiro para este byte
 
 	fseek(saida, b_inicial, SEEK_SET);
 
@@ -385,5 +340,5 @@ void ImprimeRegistro(FILE* saida, int b_inicial)
 
 	printf("%d %s %s %d %s %d %s %d %s\n", codigo_escola,data_ini,data_fim,tam_nome,nome_escola,tam_municipio, municipio, tam_endereco, endereco);
 
-
+	fseek(saida, b_inicial, SEEK_SET);
 }
