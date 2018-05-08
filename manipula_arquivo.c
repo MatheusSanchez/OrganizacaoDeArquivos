@@ -138,6 +138,9 @@ void  arquivo_saida(Arquivo *entrada) {
 	fwrite(&entrada->status, sizeof(char), 1, saida);
 	fwrite(&entrada->topo_pilha, sizeof(int), 1, saida);
 
+	long int posicao_atual;
+	int bytes_faltantes;
+	char c = '0';
 
 	for (int i = 0; i < entrada->n_registros_lidos; ++i){
 		
@@ -151,16 +154,16 @@ void  arquivo_saida(Arquivo *entrada) {
 		fwrite(&entrada->registros_lidos[i].indicador_tamanho_endereco, sizeof(int), 1, saida);
 		fwrite(entrada->registros_lidos[i].endereco, sizeof(char), entrada->registros_lidos[i].indicador_tamanho_endereco, saida);
 		
-		// fwrite(&(entrada->registros_lidos[i].codigo_escola), sizeof(int), 1, saida);
-		// fwrite(&entrada->registros_lidos[i].data_inicio, sizeof(char), 10, saida);
-		// fwrite(&entrada->registros_lidos[i].data_final, sizeof(char), 10, saida);
-		// fwrite(&entrada->registros_lidos[i].indicador_tamanho_escola, sizeof(int), 1, saida);
-		// fwrite(entrada->registros_lidos[i].nome_escola, sizeof(char), sizeof(entrada->registros_lidos[i].nome_escola)-1, saida);
-		// fwrite(&entrada->registros_lidos[i].indicador_tamanho_municipio, sizeof(int), 1, saida);
-		// fwrite(entrada->registros_lidos[i].municipio, sizeof(char), sizeof(entrada->registros_lidos[i].municipio)-1, saida);
-		// fwrite(&entrada->registros_lidos[i].indicador_tamanho_endereco, sizeof(int), 1, saida);
-		// fwrite(entrada->registros_lidos[i].endereco, sizeof(char), sizeof(entrada->registros_lidos[i].endereco)-1, saida);
+		posicao_atual = ftell(saida) - T_CABECALHO; // posicao depois do registro inserido (tirando o cabecalho)
+		//printf("posicao atual %ld\n", posicao_atual);
 
+		if((posicao_atual % TAMANHOREGISTRO) != 0){ // se não estivermos em um multiplo do tamanho do registro, temos que completar o registro
+
+			bytes_faltantes = (TAMANHOREGISTRO*(i+1)) - (posicao_atual); // qntd de bytes para preencher = tamanho do registro - posicao final do registro atual;
+
+			//printf("bytes faltando %d\n", bytes_faltantes);
+			fwrite(&c, sizeof(char), bytes_faltantes, saida); // preenchendo o fim do arquivo
+		}
 
 		// fprintf(saida1, "%d", entrada->registros_lidos[i].codigo_escola); // gravando codigo da escola	
  	// 	fprintf(saida1, "%s%s", entrada->registros_lidos[i].data_inicio,entrada->registros_lidos[i].data_final); // gravando as datas	
@@ -201,11 +204,12 @@ void exibe_registros(){ // função 2
 	int tamanho_arquivo = ftell(saida);
 	fseek(saida, 0, SEEK_SET);
 
-	fseek(saida, 5, SEEK_SET); // PULA OS 5 BYTES DO REGISTRO DE CABEÇALHO
+	fseek(saida, T_CABECALHO, SEEK_SET); // PULA OS 5 BYTES DO REGISTRO DE CABEÇALHO
 
 
-	while(ftell(saida) < tamanho_arquivo){ // enquanto houver linhas linhas para ler
+	for(int i = 0; ftell(saida) < tamanho_arquivo; i++){ // enquanto houver linhas linhas para ler
 		
+
 
 		fread(&codigo_escola, sizeof(int), 1, saida); // 4 bytes
 		fread(data_ini, sizeof(char), 10, saida);  // 10*1 byte
@@ -226,6 +230,7 @@ void exibe_registros(){ // função 2
 		fread(endereco, sizeof(char), tam_endereco, saida); // tam_endereco*1 byte
 
 
+
 		//total 112 bytes, tamanho do registro
 
 		//ACRESCENTA O \0 AO FINAL DAS STRINGS LIDAS
@@ -233,6 +238,7 @@ void exibe_registros(){ // função 2
 		municipio[tam_municipio] = '\0';
 		endereco[tam_endereco] = '\0';
 
+		fseek(saida, (TAMANHOREGISTRO*(i+1) + T_CABECALHO), SEEK_SET); // Pulando os caracteres "lixo" do registro
 		//PRINTA CADA REGISTRO EM 1 LINHA
 		printf("%d %s %s %d %s %d %s %d %s\n", codigo_escola,data_ini,data_fim,tam_nome,nome_escola,tam_municipio, municipio, tam_endereco, endereco);
 	}

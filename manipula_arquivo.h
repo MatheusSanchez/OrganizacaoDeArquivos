@@ -8,6 +8,7 @@
 #define DEURUIM 42
 #define DATANULA "0000000000"
 #define TAMANHOREGISTRO 112
+#define T_CABECALHO 5
 #define OCUPADOS 41
 
 struct registro {

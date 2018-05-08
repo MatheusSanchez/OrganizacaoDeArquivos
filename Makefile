@@ -23,7 +23,7 @@ run2: main
 	./main 2
 
 clean: 
-	rm -rf *o main
+	rm -rf *o main *bin
 
 clean_all:	
 	rm -rf *o
