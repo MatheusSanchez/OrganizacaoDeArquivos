@@ -20,7 +20,7 @@ run: main
 	./main 1 entrada.csv
 
 run2: main
-	./main 2 >>out.txt
+	./main 2
 
 clean: 
 	rm -rf *o main

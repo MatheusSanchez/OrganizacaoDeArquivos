@@ -179,55 +179,69 @@ void  arquivo_saida(Arquivo *entrada) {
 
 void exibe_registros(){
 
-	char status;
-	int topo_pilha;
 
-	int codigo_escola;
-	char data_ini[11];
+	int codigo_escola; 
+	
+	char data_ini[11]; // OS 10 BYTES DA DATA MAIS O \0
 	char data_fim[11];
-	char* nome_escola = NULL;
+	
 	int tam_nome;
+	char* nome_escola = NULL;
+	
 	int tam_municipio;
 	char* municipio = NULL;
+	
 	int tam_endereco;
 	char* endereco = NULL;
 	
+	char str[201];
 
 	FILE * saida;
 	saida = fopen("saida2.bin", "rb");
-	fread(&status, sizeof(char), 1, saida);
-	fread(&topo_pilha, sizeof(int), 1, saida);
-	printf("status = %c, topo_pilha = %d\n", status, topo_pilha);	
+	
+	fseek(saida, 0, SEEK_END);
+	int tamanho_arquivo = ftell(saida);
+	fseek(saida, 0, SEEK_SET);
 
-	//fseek(saida, 5, SEEK_SET);
+	fseek(saida, 5, SEEK_SET); // PULA OS 5 BYTES DO REGISTRO DE CABEÇALHO
 
 
-	while(!feof(saida)){
+	while(ftell(saida) < tamanho_arquivo){
+		
+		// fread(str,sizeof(char), 200, saida);
+		// //fgets(str, 112, saida);
+		// str[200] = '\0';
+
+		// printf("str = %s\n", str);
+
 		fread(&codigo_escola, sizeof(int), 1, saida);
 		fread(data_ini, sizeof(char), 10, saida);
 		fread(data_fim, sizeof(char), 10, saida);
+		
 		data_ini[10] = data_fim[10] = '\0';
 		
 		fread(&tam_nome, sizeof(int), 1, saida);
-		nome_escola = realloc(nome_escola, (tam_nome+1) * sizeof(char));
+		nome_escola = realloc(nome_escola, (tam_nome+1) * sizeof(char)); // REALLOCA A STRING COM O TAMANHO DO CAMPO +1 PARA CABER O \0
 		fread(nome_escola, sizeof(char), tam_nome, saida);
 		
 		fread(&tam_municipio, sizeof(int), 1, saida);
-		municipio = realloc(municipio, (tam_municipio+1) * sizeof(char));
+		municipio = realloc(municipio, (tam_municipio+1) * sizeof(char)); // REALLOCA A STRING COM O TAMANHO DO CAMPO +1 PARA CABER O \0
 		fread(municipio, sizeof(char), tam_municipio, saida);
 
 		fread(&tam_endereco, sizeof(int), 1, saida);
-		endereco = realloc(endereco, (tam_endereco+1) * sizeof(char));
+		endereco = realloc(endereco, (tam_endereco+1) * sizeof(char)); // REALLOCA A STRING COM O TAMANHO DO CAMPO +1 PARA CABER O \0
+		
 		fread(endereco, sizeof(char), tam_endereco, saida);
 
-
+		//ACRESCENTA O \0 AO FINAL DAS STRINGS LIDAS
 		nome_escola[tam_nome] = '\0';
 		municipio[tam_municipio] = '\0';
 		endereco[tam_endereco] = '\0';
 
+		//PRINTA CADA REGISTRO EM 1 LINHA
 		printf("%d %s %s %d %s %d %s %d %s\n", codigo_escola,data_ini,data_fim,tam_nome,nome_escola,tam_municipio, municipio, tam_endereco, endereco);
 
-		
+		//exit(0);
 	}
 
 

@@ -18,6 +18,9 @@ int main (int argc, char ** argv) {
 
 	}else if(funcionalidade == 2){ // exibição de todos os registros no terminal
 		exibe_registros();
+	}else if(funcionalidade == 3) // EXIBIÇÃO DE TODOS OS REGISTROS COM DETERMINADO VALOR EM DETERMINANDO CAMPO
+	{
+
 	}
 	
 	
