@@ -34,172 +34,186 @@ char * le_tamanho_variavel(FILE * posicao_atual, int * tamanho_campo) {
 		*(palavra_lida + n_letras) = '\0';
 		*tamanho_campo = n_letras ;
 	}
-	
-	printf("%s%c \n", palavra_lida,atual);
 
 	return palavra_lida;
 }
 
 Arquivo le_dados(char * nome_arquivo) {
 
-	FILE * pa = NULL;
-
+	FILE * fp = NULL;
+	
+	int i =0;
 
 	Arquivo novo;
 
 	//SETANDO O REGISTRO DE CABEÇALHO
 	novo.status = '1';
-	novo.topo_pilha =-1;
+	novo.topo_pilha = -1;
 
-	int n_registros_lidos = 0;
+	novo.n_registros_lidos = 0;
 	char auxiliar;
-	pa = fopen(nome_arquivo, "r");
-	fseek(pa, 0, SEEK_END);
-	int tamanho_arquivo = ftell(pa);
-	fseek(pa, 0, SEEK_SET);
+	fp = abreArquivo("entrada.csv");
+	long int tamanho_arquivo = tamArquivo(fp);
 	novo.registros_lidos = NULL;
-	if(pa == NULL){
-		printf("Erro ao abrir o arquivo, lamento !\n");
-		exit(0);
+	if(fp == NULL){
+		printf("Falha no carregamento do arquivo.\n");
+		return novo;
 	}
 
-	while (ftell(pa) < tamanho_arquivo){
+	while (ftell(fp) < tamanho_arquivo){
 
-		printf("to aqui meu amor\n");
-		novo.registros_lidos = realloc(novo.registros_lidos, (n_registros_lidos + 1) * sizeof(Registro));
+		novo.registros_lidos = realloc(novo.registros_lidos, (novo.n_registros_lidos + 1) * sizeof(Registro));
 		
 		// acessa o Arquivo no vetor de registros e salva em cada elemento
 		// da struct o que lhe é destinado
 
-		fscanf(pa,"%d",&((novo.registros_lidos + n_registros_lidos)->codEscola));
-		fgetc(pa);
+		// Leio o codigo da escola e pulo o ;
+		fscanf(fp,"%d",&(novo.registros_lidos[i].codEscola));
+		fgetc(fp);
 
-		// substituido
-		// fread(&((novo.registros_lidos + n_registros_lidos)->codEscola), 1, sizeof(int), pa);
+		// Leio os Registros de Tamanho Variavel
+		novo.registros_lidos[i].nomeEscola = 
+		le_tamanho_variavel(fp, &(novo.registros_lidos[i].indicador_tamanho_escola));
+		novo.registros_lidos[i].municipio = 
+		le_tamanho_variavel(fp, &(novo.registros_lidos[i].indicador_tamanho_municipio));
+		novo.registros_lidos[i].endereco = 
+		le_tamanho_variavel(fp, &(novo.registros_lidos[i].indicador_tamanho_endereco));
 
-		(novo.registros_lidos + n_registros_lidos)->nome_escola = 
-		le_tamanho_variavel(pa, &((novo.registros_lidos + n_registros_lidos)->indicador_tamanho_escola));
-		(novo.registros_lidos + n_registros_lidos)->municipio = 
-		le_tamanho_variavel(pa, &((novo.registros_lidos + n_registros_lidos)->indicador_tamanho_municipio));
-		(novo.registros_lidos + n_registros_lidos)->endereco = 
-		le_tamanho_variavel(pa, &((novo.registros_lidos + n_registros_lidos)->indicador_tamanho_endereco));
-
-		auxiliar = fgetc(pa);
+		//Se o proximo caracter for um ; entao quer dizer que a data inicio é NULA
+		auxiliar = fgetc(fp);
 
 		if (auxiliar == ';') {
-
-			strcpy(((novo.registros_lidos) + n_registros_lidos)->data_inicio, "0000000000\0");
-			printf("data ini bugou%s\n", (novo.registros_lidos + n_registros_lidos)->data_inicio);
-
+			strcpy(novo.registros_lidos[i].dataInicio, "0000000000\0");
 		} else {
-
-			(novo.registros_lidos + n_registros_lidos)->data_inicio[0] = auxiliar;
-			fread((novo.registros_lidos + n_registros_lidos)->data_inicio+1, 1, 9, pa);	
-			(novo.registros_lidos + n_registros_lidos)->data_inicio[10] = '\0';
-			fgetc(pa);	
-			printf("data ini %s\n", (novo.registros_lidos + n_registros_lidos)->data_inicio);
-		}
-
-
-		auxiliar = fgetc(pa);
-
-		if (auxiliar == '\n') {	
-			strcpy(((novo.registros_lidos) + n_registros_lidos)->data_final, "0000000000\0");
-			printf("data fim bugou %s\n", (novo.registros_lidos + n_registros_lidos)->data_final);	
-
-		} else {
-
-			(novo.registros_lidos + n_registros_lidos)->data_final[0] = auxiliar;
-			fread((novo.registros_lidos + n_registros_lidos)->data_final+1, 1, 9, pa);	
-			((novo.registros_lidos + n_registros_lidos)->data_final[10]) = '\0';
-			auxiliar = fgetc(pa);
-			printf("data fim %s\n", (novo.registros_lidos + n_registros_lidos)->data_final);
+			// senao for, então atribuo o caracter lido para a primeira posicao da string e leio +9 bytes
+			novo.registros_lidos[i].dataInicio[0] = auxiliar;
+			fread((novo.registros_lidos[i].dataInicio)+1, 1, 9, fp);	
+			novo.registros_lidos[i].dataInicio[10] = '\0'; // para indicar o final da string
+			fgetc(fp); // leio o ;
 		}	
 
+		// se o proximo caracter for um \n, entao a data final é nula
+		auxiliar = fgetc(fp);
 
-		n_registros_lidos++;
+		if (auxiliar == '\n') {	
+			strcpy(novo.registros_lidos[i].dataFinal, "0000000000\0");
+		} else {
+			// senao for, então atribuo o caracter lido para a primeira posicao da string e leio +9 bytes
+			novo.registros_lidos[i].dataFinal[0] = auxiliar;
+			fread((novo.registros_lidos[i].dataFinal)+1, 1, 9, fp);	
+			novo.registros_lidos[i].dataFinal[10] = '\0'; // para indicar o final da string
+			auxiliar = fgetc(fp); // leio o \n
+			
+		}	
+
+		//+1 registro lido com sucesso
+		novo.n_registros_lidos++;
+		i++;
 		
 	}
 
-
-	novo.n_registros_lidos = n_registros_lidos;
-	return novo;
+	return novo; // retorno o arquivo
 }
+// Funcao que recebe o arquivo e o numero do RRN atual e retorna o numero de bytes que faltam para chegar no proximo registro
+int bytesRestantes(FILE* fp, int RRN){  
 
+	long int posicao_atual = ftell(fp); // Posicao depois do registro inserido (tirando o cabecalho)
 
-void  arquivo_saida(Arquivo *entrada) {
+		if((posicao_atual % TAMANHOREGISTRO) != 0){ // Se não estivermos em um multiplo do tamanho do registro, temos que completar o registro
 
+			// Byte Inicial do Proximo RRN = 112 *prox RRN - Tamanho do Cabeçalho
+			// Retorna o Byte Inicial do proximo RRN - posicao atual
 
-	FILE * saida,*saida1;
-
-
-	saida = fopen("saida.bin", "wb");
-	//cabecalho
-	fwrite(&entrada->status, sizeof(char), 1, saida);
-	fwrite(&entrada->topo_pilha, sizeof(int), 1, saida);
-
-	long int posicao_atual;
-	int bytes_faltantes;
-	char c = '0';
-
-	for (int i = 0; i < entrada->n_registros_lidos; ++i){
-		
-		fwrite(&(entrada->registros_lidos[i].codEscola), sizeof(int), 1, saida);
-		fwrite(&entrada->registros_lidos[i].data_inicio, sizeof(char), 10, saida);
-		fwrite(&entrada->registros_lidos[i].data_final, sizeof(char), 10, saida);
-		fwrite(&entrada->registros_lidos[i].indicador_tamanho_escola, sizeof(int), 1, saida);
-		fwrite(entrada->registros_lidos[i].nome_escola, sizeof(char), entrada->registros_lidos[i].indicador_tamanho_escola, saida);
-		fwrite(&entrada->registros_lidos[i].indicador_tamanho_municipio, sizeof(int), 1, saida);
-		fwrite(entrada->registros_lidos[i].municipio, sizeof(char), entrada->registros_lidos[i].indicador_tamanho_municipio, saida);
-		fwrite(&entrada->registros_lidos[i].indicador_tamanho_endereco, sizeof(int), 1, saida);
-		fwrite(entrada->registros_lidos[i].endereco, sizeof(char), entrada->registros_lidos[i].indicador_tamanho_endereco, saida);
-		
-		posicao_atual = ftell(saida) - T_CABECALHO; // posicao depois do registro inserido (tirando o cabecalho)
-
-		if((posicao_atual % TAMANHOREGISTRO) != 0){ // se não estivermos em um multiplo do tamanho do registro, temos que completar o registro
-
-			bytes_faltantes = (TAMANHOREGISTRO*(i+1)) - (posicao_atual); // qntd de bytes para preencher = tamanho do registro - posicao final do registro atual;
-
-			fwrite(&c, sizeof(char), bytes_faltantes, saida); // preenchendo o fim do arquivo
+			return ((TAMANHOREGISTRO*(RRN+1)) - T_CABECALHO) - (posicao_atual); 
 		}
 
-		// fprintf(saida1, "%d", entrada->registros_lidos[i].codEscola); // gravando codigo da escola	
- 	// 	fprintf(saida1, "%s%s", entrada->registros_lidos[i].data_inicio,entrada->registros_lidos[i].data_final); // gravando as datas	
- 	// 	fprintf(saida1, "%d", entrada->registros_lidos[i].indicador_tamanho_escola); // gravando indicador de tamanho do nome da escola
- 	// 	fprintf(saida1, "%s", entrada->registros_lidos[i].nome_escola); // gravando nome da escola
- 	// 	fprintf(saida1, "%d", entrada->registros_lidos[i].indicador_tamanho_municipio); // gravando indicador de tamanho do nome da escola
- 	// 	fprintf(saida1, "%s", entrada->registros_lidos[i].municipio); // gravando nome da escola
- 	// 	fprintf(saida1, "%d", entrada->registros_lidos[i].indicador_tamanho_endereco); // gravando indicador de tamanho do nome da escola
- 	// 	fprintf(saida1, "%s", entrada->registros_lidos[i].endereco); // gravando nome da escola
+}
 
+//Funcao que receber o arquivo e um registro e escreve o registro no arquivo. Necessario saber o RRN
+void EscreveRegistro(FILE* fp,Registro reg, int RRN){ 
+
+	// Escrevo todo os campos do registro
+	fwrite(&(reg.codEscola), sizeof(int), 1, fp);
+	fwrite(&reg.dataInicio, sizeof(char), 10, fp);
+	fwrite(&reg.dataFinal, sizeof(char), 10, fp);
+	fwrite(&reg.indicador_tamanho_escola, sizeof(int), 1, fp);
+	fwrite(reg.nomeEscola, sizeof(char), reg.indicador_tamanho_escola, fp);
+	fwrite(&reg.indicador_tamanho_municipio, sizeof(int), 1, fp);
+	fwrite(reg.municipio, sizeof(char), reg.indicador_tamanho_municipio, fp);
+	fwrite(&reg.indicador_tamanho_endereco, sizeof(int), 1, fp);
+	fwrite(reg.endereco, sizeof(char), reg.indicador_tamanho_endereco, fp);
+
+	//Completo os 112 bytes restantes com 0;
+	int nBytes = bytesRestantes(fp, RRN);
+	char c = '0';
+
+	fwrite(&c, sizeof(char), nBytes, fp); // Preenchendo o fim do arquivo
+
+}
+
+void arquivo_saida(Arquivo *entrada) {
+
+
+	FILE * fp;
+	fp = fopen("saida.bin", "wb");
+	
+	//Escreve o Registro de Cabeçalho
+	
+	fwrite(&entrada->status, sizeof(char), 1, fp);
+	fwrite(&entrada->topo_pilha, sizeof(int), 1, fp);
+
+	// Escrevo no Arquivo de Saida os Registros Validos
+	for (int i = 0; i < entrada->n_registros_lidos; ++i){
+		EscreveRegistro(fp, entrada->registros_lidos[i], i);
 	}	
 	
-	fclose(saida);
+	fechaArquivo(fp);
 	
+}
+
+// imprime o registro com o RRN passado
+void ImprimeRegistro(FILE* fp, int RRN){ 
+	
+	int tamanho_arquivo = tamArquivo(fp);
+
+	// Se o byte inicial do RRN pedido for maior que o tamanho do arquivo
+	if(tamanho_arquivo < (RRN*TAMANHOREGISTRO+T_CABECALHO)){
+		printf("Falha no processamento do arquivo\n");
+		return;
+	}
+	// Le o primeiro byte e ve se o registro foi removido
+	char c = fgetc(fp);
+	fseek(fp, (RRN*TAMANHOREGISTRO+T_CABECALHO), SEEK_SET);
+
+	if(c == '*'){
+		return ;
+	}
+
+	//Imprime o Registro
+	Registro* r = reg(fp, RRN);
+
+	printf("%d %s %s %d %s %d %s %d %s\n", r->codEscola, r->dataInicio, r->dataFinal, r->indicador_tamanho_escola, r->nomeEscola, r->indicador_tamanho_municipio, r->municipio, r->indicador_tamanho_endereco, r->endereco);
+
 }
 
 void exibe_registros(){ // função 2
 
+	FILE * fp;
+	fp = fopen("saida.bin", "rb");
+	int tamanho_arquivo = tamArquivo(fp);
 
-	FILE * saida;
-	saida = fopen("saida2.bin", "rb");
-	
-	fseek(saida, 0, SEEK_END);
-	int tamanho_arquivo = ftell(saida);
-	fseek(saida, 0, SEEK_SET);
-
-	fseek(saida, T_CABECALHO, SEEK_SET); // PULA OS 5 BYTES DO REGISTRO DE CABEÇALHO
+	// Anda até o primeiro registro
+	fseek(fp, T_CABECALHO, SEEK_SET); // Pula os 5 bytes de Registro de Cabeçalho
 
 
-	for(int i = 0; ftell(saida) < tamanho_arquivo; i++){ // enquanto houver linhas linhas para ler
+	for(int i = 0; ftell(fp) < tamanho_arquivo; i++){ // Enquanto houver registros para ler
 		
-		ImprimeRegistro(saida,ftell(saida));
-		fseek(saida, TAMANHOREGISTRO, SEEK_CUR);
+		//Imprime o Registro e Pula para o proximo
+		ImprimeRegistro(fp, i);
+		proxRegistro(fp);
 		
 	}
-
-
-	fclose(saida);
+	fechaArquivo(fp);
 }
 
 void func3_auxiliar(FILE* saida, char* nome_campo, char* val_campo){
@@ -208,9 +222,8 @@ void func3_auxiliar(FILE* saida, char* nome_campo, char* val_campo){
 	int tamanho;
 	char *str;
 
-	fseek(saida, 0, SEEK_END);
-	int tamanho_arquivo = ftell(saida);
-	fseek(saida, 0, SEEK_SET);
+	
+	int tamanho_arquivo = tamArquivo(fp);
 	fseek(saida, T_CABECALHO, SEEK_SET); // PULA OS 5 BYTES DO REGISTRO DE CABEÇALHO
 
 
@@ -378,60 +391,6 @@ char* query (FILE* fp, int b_inicial, int tamanho){
 	return str;
 }
 
-void ImprimeRegistro(FILE* saida, int b_inicial){ // imprime o registro do byte inicial passado por argumento e retorna o ponteiro para este byte
-	fseek(saida, 0, SEEK_END);
-	int tamanho_arquivo = ftell(saida);
-	fseek(saida, 0, SEEK_SET);
-
-	if(tamanho_arquivo <= b_inicial){
-		printf("Falha no processamento do arquivo\n");
-		return;
-	}
-
-	fseek(saida, b_inicial, SEEK_SET);
-	char c = fgetc(saida);
-	fseek(saida, b_inicial, SEEK_SET);
-
-	/*if(c == '*'){
-		return ;
-	}*/
-	int codEscola; 
-	
-	char data_ini[11]; // OS 10 BYTES DA DATA MAIS O \0
-	char data_fim[11];
-	
-	int tam_nome;
-	char* nome_escola = NULL; 
-	
-	int tam_municipio;
-	char* municipio = NULL;
-	
-	int tam_endereco;
-	char* endereco = NULL;
-
-	fread(&codEscola, sizeof(int), 1, saida); // 4 bytes
-	fread(data_ini, sizeof(char), 10, saida);  // 10*1 byte
-	fread(data_fim, sizeof(char), 10, saida); // 10*1 byte
-
-	data_ini[10] = data_fim[10] = '\0';
-
-	fread(&tam_nome, sizeof(int), 1, saida); // 4 bytes
-	nome_escola = realloc(nome_escola, (tam_nome+1) * sizeof(char)); // REALLOCA A STRING COM O TAMANHO DO CAMPO +1 PARA CABER O \0
-	fread(nome_escola, sizeof(char), tam_nome, saida); // tam_nome*1 byte
-
-	fread(&tam_municipio, sizeof(int), 1, saida); // 4 bytes
-	municipio = realloc(municipio, (tam_municipio+1) * sizeof(char)); // REALLOCA A STRING COM O TAMANHO DO CAMPO +1 PARA CABER O \0
-	fread(municipio, sizeof(char), tam_municipio, saida);  // tam_municipio*1 byte
-
-	fread(&tam_endereco, sizeof(int), 1, saida);
-	endereco = realloc(endereco, (tam_endereco+1) * sizeof(char)); // REALLOCA A STRING COM O TAMANHO DO CAMPO +1 PARA CABER O \0	
-	fread(endereco, sizeof(char), tam_endereco, saida); // tam_endereco*1 byte
-
-	printf("%d %s %s %d %s %d %s %d %s\n", codEscola,data_ini,data_fim,tam_nome,nome_escola,tam_municipio, municipio, tam_endereco, endereco);
-
-	fseek(saida, b_inicial, SEEK_SET);
-
-}
 
 void RemoveRegistro(FILE* saida, int RRN)
 {
@@ -719,7 +678,7 @@ bool existeReg(int RRN, FILE * fp){ //verifica se o registro é valido (isto é,
 }
 
 
-Registro *reg(int RRN, FILE *fp){ //retorna um registro no RRN passado
+Registro *reg( FILE *fp, int RRN){ //retorna um registro no RRN passado
 								 // OBS garantir que o registro existe e o ponteiro do arquivo é válido;
 
 	long int posicao_atual = ftell(fp);
@@ -727,23 +686,23 @@ Registro *reg(int RRN, FILE *fp){ //retorna um registro no RRN passado
 
 	Registro* reg = (Registro *)malloc(sizeof(Registro));
 
-	fread(&(reg->codEscola), sizeof(int), 1, saida); // 4 bytes
-	fread(reg->data_inicio, sizeof(char), 10, saida);  // 10*1 byte
-	fread(reg->data_fim, sizeof(char), 10, saida); // 10*1 byte
+	fread(&(reg->codEscola), sizeof(int), 1, fp); // 4 bytes
+	fread(reg->dataInicio, sizeof(char), 10, fp);  // 10*1 byte
+	fread(reg->dataFinal, sizeof(char), 10, fp); // 10*1 byte
 
-	reg->data_ini[10] = reg->data_fim[10] = '\0';
+	reg->dataInicio[10] = reg->dataFinal[10] = '\0';
 
-	fread(&(reg->indicador_tamanho_escola), sizeof(int), 1, saida); // 4 bytes
-	reg->nome_escola = realloc(reg->nome_escola, (reg->indicador_tamanho_escola+1) * sizeof(char)); // REALLOCA A STRING COM O TAMANHO DO CAMPO +1 PARA CABER O \0
-	fread(reg->nome_escola, sizeof(char), (reg->indicador_tamanho_escola), saida); // tam_nome*1 byte
+	fread(&(reg->indicador_tamanho_escola), sizeof(int), 1, fp); // 4 bytes
+	reg->nomeEscola = realloc(reg->nomeEscola, (reg->indicador_tamanho_escola+1) * sizeof(char)); // REALLOCA A STRING COM O TAMANHO DO CAMPO +1 PARA CABER O \0
+	fread(reg->nomeEscola, sizeof(char), (reg->indicador_tamanho_escola), fp); // tam_nome*1 byte
 
-	fread(&(reg->indicador_tamanho_municipio), sizeof(int), 1, saida); // 4 bytes
+	fread(&(reg->indicador_tamanho_municipio), sizeof(int), 1, fp); // 4 bytes
 	reg->municipio = realloc(reg->municipio, (reg->indicador_tamanho_municipio+1) * sizeof(char)); // REALLOCA A STRING COM O TAMANHO DO CAMPO +1 PARA CABER O \0
-	fread(reg->municipio, sizeof(char), (reg->indicador_tamanho_municipio), saida); // tam_nome*1 byte
+	fread(reg->municipio, sizeof(char), (reg->indicador_tamanho_municipio), fp); // tam_nome*1 byte
 
-	fread(&(reg->indicador_tamanho_endereco), sizeof(int), 1, saida); // 4 bytes
+	fread(&(reg->indicador_tamanho_endereco), sizeof(int), 1, fp); // 4 bytes
 	reg->endereco = realloc(reg->endereco, (reg->indicador_tamanho_endereco+1) * sizeof(char)); // REALLOCA A STRING COM O TAMANHO DO CAMPO +1 PARA CABER O \0
-	fread(reg->endereco, sizeof(char), (reg->indicador_tamanho_endereco), saida); // tam_nome*1 byte
+	fread(reg->endereco, sizeof(char), (reg->indicador_tamanho_endereco), fp); // tam_nome*1 byte
 
 	fseek(fp, posicao_atual, SEEK_SET);	 // voltamos para posicao inicial da funcao
 
@@ -768,7 +727,7 @@ bool proxRegistro(FILE *fp){ // avança um registro no arquivo "fp"
 
 	fseek(fp, TAMANHOREGISTRO, SEEK_CUR); // somamos o tamanho do registro no registro atual
 
-	if(ftell(fp) < tamArquivo(fp)){
+	if(ftell(fp) <= tamArquivo(fp)){
 
 		return true;
 	}else{
@@ -783,9 +742,12 @@ void free_reg(Registro *reg){
 	if(reg == NULL){
 		printf("O registro não existe :(\n");
 	}else{
-		free(reg->nome_escola);
-		free(reg->municipio);
-		free(reg->endereco);
+		if(reg->nomeEscola != NULL)
+			free(reg->nomeEscola);
+		if(reg->municipio != NULL)
+			free(reg->municipio);
+		if(reg->endereco != NULL)
+			free(reg->endereco);
 		free(reg);
 	}	
 

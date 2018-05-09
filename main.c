@@ -6,18 +6,13 @@
 
 int main (int argc, char ** argv) {
 	int funcionalidade = atoi(*(argv + 1));
-	
-
-	
-	printf("Função %d \n", funcionalidade);
-
 	if(funcionalidade == 1){ //leitura e gravação de registro
 
 		char * nome_arquivo;
 		nome_arquivo = *(argv + 2);
 		Arquivo dados_brutos = le_dados(nome_arquivo);
 		arquivo_saida(&dados_brutos);
-		//printf("Nome do Arquivo %s \n", nome_arquivo);
+		
 
 	}else if(funcionalidade == 2){ // exibição de todos os registros no terminal
 		exibe_registros();

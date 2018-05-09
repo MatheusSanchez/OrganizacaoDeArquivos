@@ -20,10 +20,10 @@
 
 struct registro {
 	int codEscola;
-	char data_inicio[11];
-	char data_final[11];
+	char dataInicio[11];
+	char dataFinal[11];
 	int indicador_tamanho_escola;
-	char * nome_escola;
+	char * nomeEscola;
 	int indicador_tamanho_municipio;
 	char * municipio;
 	int indicador_tamanho_endereco;
@@ -64,4 +64,9 @@ void func9();
 FILE * abreArquivo(char *nome_arquivo);
 bool existeReg(int RRN, FILE * fp);
 void fechaArquivo(FILE *fp);
+
+Registro *reg( FILE *fp, int RRN);
+long int tamArquivo(FILE *fp);
+bool proxRegistro(FILE *fp);
+void free_reg(Registro *reg);
 #endif
