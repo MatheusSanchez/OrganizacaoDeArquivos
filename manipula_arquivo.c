@@ -155,13 +155,11 @@ void  arquivo_saida(Arquivo *entrada) {
 		fwrite(entrada->registros_lidos[i].endereco, sizeof(char), entrada->registros_lidos[i].indicador_tamanho_endereco, saida);
 		
 		posicao_atual = ftell(saida) - T_CABECALHO; // posicao depois do registro inserido (tirando o cabecalho)
-		//printf("posicao atual %ld\n", posicao_atual);
 
 		if((posicao_atual % TAMANHOREGISTRO) != 0){ // se não estivermos em um multiplo do tamanho do registro, temos que completar o registro
 
 			bytes_faltantes = (TAMANHOREGISTRO*(i+1)) - (posicao_atual); // qntd de bytes para preencher = tamanho do registro - posicao final do registro atual;
 
-			//printf("bytes faltando %d\n", bytes_faltantes);
 			fwrite(&c, sizeof(char), bytes_faltantes, saida); // preenchendo o fim do arquivo
 		}
 
@@ -229,7 +227,6 @@ void func3_auxiliar(FILE* saida, char* nome_campo, char* val_campo){
 			str = query(saida,ftell(saida),tamanho);
 
 			fseek(saida, (TAMANHOREGISTRO*i)+T_CABECALHO, SEEK_SET);
-			//printf("%s --- %s\n",val_campo ,str);
 			if(strcmp(val_campo, str) == 0){
 				ImprimeRegistro(saida, (TAMANHOREGISTRO*i)+T_CABECALHO);
 			}	
@@ -392,7 +389,12 @@ void ImprimeRegistro(FILE* saida, int b_inicial){ // imprime o registro do byte 
 	}
 
 	fseek(saida, b_inicial, SEEK_SET);
+	char c = fgetc(saida);
+	fseek(saida, b_inicial, SEEK_SET);
 
+	if(c == '*'){
+		return ;
+	}
 	int codigo_escola; 
 	
 	char data_ini[11]; // OS 10 BYTES DA DATA MAIS O \0
@@ -469,4 +471,107 @@ void RemoveRegistro(FILE* saida, int RRN)
 
 		printf("Registro Removido com Sucesso\n");
 	}
+}
+
+void Insercao(FILE* saida, int codEscola,  char* dataInicio,  char* dataFinal,  char* nome_escola,  char* municipio,  char*endereco){
+
+	fseek(saida, 1, SEEK_SET); // indo para o topo da pilha
+
+	char aux[11] = "0000000000\0"; // string de 10 bytes para escrever as datas nulas
+	int topo_pilha; // auxiliar que ira guardar o novo topo da pilha caso a insercao seja feita em cima de um registro removido anteriormente
+	int RRN; // RRN onde sera inserido o novo registro
+	fread(&RRN, sizeof(int), 1, saida); // leio do topo da pilha onde irei inserir
+	int tamanho_arquivo;
+
+	if(RRN == -1) {// se o valor lido for -1 entao devo inserir no final do arquivo
+		fseek(saida, 0, SEEK_END); // vou para o final do arquivo
+		tamanho_arquivo = ftell(saida); // guardo o tamanho atual do arquivo
+	}else{ 	
+	// senao
+		// acesso o RRN lido
+		fseek(saida, (RRN*TAMANHOREGISTRO)+T_CABECALHO, SEEK_SET);
+		fgetc(saida); // leio o primeiro byte que vai ser um '*'
+		fread(&topo_pilha, sizeof(int), 1, saida); // leio um inteiro guardado no registro removido que agora sera o novo topo da pilha
+
+		//escrevo esse novo valor lido como o novo topo da pilha
+		fseek(saida, 1, SEEK_SET); 
+		fwrite(&topo_pilha, sizeof(int), 1, saida);
+
+		// volto para onde inserirei o novo arquivo
+		fseek(saida, (RRN*TAMANHOREGISTRO)+T_CABECALHO, SEEK_SET);
+
+
+	}
+
+	//inserindo o registro
+
+	fwrite(&codEscola, sizeof(int), 1, saida);
+
+	//escrevendo dataInicio
+	if(strcmp(dataInicio, "0") == 0){ // se a data inicio for nula, inserindo a string aux
+		fwrite(aux, sizeof(char), 10, saida);
+
+	}else{
+		fwrite(dataInicio, sizeof(char), 10, saida);
+	}
+
+	//escrevendo datafinal
+	if(strcmp(dataFinal, "0") == 0){ // se a data final for nula , inserindo a string aux
+		fwrite(aux, sizeof(char), 10, saida);
+
+	}else{
+		fwrite(dataFinal, sizeof(char), 10, saida);
+	}
+
+	// tamanho das strings lidas no terminal
+	int tam_escola = strlen(nome_escola);
+	int tam_municipio = strlen(municipio);
+	int tam_endereco = strlen(endereco);
+
+	// escrevo o tamanho e a strings de nome, municipio e endereco, respectivamente
+	fwrite(&tam_escola, sizeof(int), 1, saida);
+	fwrite(nome_escola, sizeof(char), tam_escola, saida);
+
+
+	fwrite(&tam_municipio, sizeof(int), 1, saida);
+	fwrite(municipio, sizeof(char), tam_municipio, saida);
+
+	fwrite(&tam_endereco, sizeof(int), 1, saida);
+	fwrite(endereco, sizeof(char), tam_endereco, saida);
+
+
+	// calculo o numero de bytes restantes para preencher os 112 bytes do registro
+	long int posicao_atual;
+	int bytes_faltantes;
+
+	posicao_atual = ftell(saida);
+
+	// se o RRN for -1, entao estou inserindo no final do arquivo
+	if(RRN == -1){
+		if((posicao_atual % TAMANHOREGISTRO) != 0){ // se não estivermos em um multiplo do tamanho do registro, temos que completar o registro
+
+				bytes_faltantes = ((TAMANHOREGISTRO+tamanho_arquivo) - (posicao_atual)); // qntd de bytes para preencher = tamanho do arquivo antes da insercao + tamanho do registro - a posicao atual
+
+				fwrite(&aux, sizeof(char), bytes_faltantes, saida); // preenchendo o fim do arquivo
+		}
+	}else{
+		// se for inserido em cima de um registro removido
+		// entao
+
+		if((posicao_atual % TAMANHOREGISTRO) != 0){ // se não estivermos em um multiplo do tamanho do registro, temos que completar o registro
+
+
+				posicao_atual -= T_CABECALHO; // necessario para quando for inserir em cima de um registro ja removido
+				bytes_faltantes = (TAMANHOREGISTRO*(RRN+1)) - (posicao_atual); // qntd de bytes para preencher = tamanho do registro * o numero do proximo RRN (RRN+1) - posicao final do registro atual;
+
+				
+				fwrite(&aux, sizeof(char), bytes_faltantes, saida); // preenchendo o fim do arquivo
+			}
+	}
+
+/*	posicao_atual = ftell(saida);
+
+	if(((posicao_atual-5) % 112) ==0)
+	printf("ola\n");		
+*/
 }

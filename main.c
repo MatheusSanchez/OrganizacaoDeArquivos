@@ -52,6 +52,24 @@ int main (int argc, char ** argv) {
 		RemoveRegistro(saida, RRN);
 
 		fclose(saida);
+	}else if(funcionalidade == 6){
+		// Registro p;
+
+		// p.codigo_escola = atoi(*(argv+2));
+		// p.data_inicio = *(argv+3);
+		// p.data_final = *(argv+4);
+		// p.nome_escola = *(argv+5);
+		// p.municipio = *(argv+6);
+		// p.endereco = *(argv+7);
+
+		int codigo_escola = atoi(*(argv+2));
+
+		FILE * saida;
+		saida = fopen("saida.bin", "r+"); // para leitura e escrita
+
+		Insercao(saida, codigo_escola, *(argv+3), *(argv+4), *(argv+5), *(argv+6), *(argv+7));
+
+		fclose(saida);
 	}
 
 }

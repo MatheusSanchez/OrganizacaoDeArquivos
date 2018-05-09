@@ -52,4 +52,7 @@ void ImprimeRegistro(FILE* fp, int b_inicial);
 
 void RemoveRegistro(FILE* saida, int RRN);
 
+void Insercao(FILE* saida, int codEscola,  char* dataInicio,  char* dataFinal,  char* nome_escola,  char* municipio,  char*endereco);
+
+
 #endif
