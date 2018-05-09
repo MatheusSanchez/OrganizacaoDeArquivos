@@ -29,7 +29,19 @@ run_dataInicio: main
 	./main 3 'dataInicio' 01/02/2012
 
 run_dataFinal: main
-	./main 3 'dataFinal' 21/12/2012
+	./main 3 'dataFinal' 25/12/2012
+
+run_nomeEscola: main
+	./main 3 'nomeEscola' 'GAVIAO PEIXOTO BRIGADEIRO'
+
+run_nomeMunicipio: main
+	./main 3 'municipio' 'OSASCO'
+
+run_nomeEndereco: main
+	./main 3 'endereco' 'RUA MOGEIRO'		
+
+run_RRN: main
+	./main 4 2	
 
 clean: 
 	rm -rf *o main *bin

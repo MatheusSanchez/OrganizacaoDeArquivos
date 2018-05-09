@@ -27,12 +27,19 @@ int main (int argc, char ** argv) {
 		FILE * saida;
 		saida = fopen("saida.bin", "rb");
 
-		func3(saida, *(argv+2), *(argv+3));
-
-		
-
+		func3(saida, nome_campo, *(argv+3));
 		fclose(saida);
 
+	}else if(funcionalidade == 4) {
+
+		int RRN = atoi(*(argv + 2));
+		printf("%d\n", RRN);
+
+		FILE * saida;
+		saida = fopen("saida.bin", "rb");
+
+		ImprimeRegistro(saida,(RRN*TAMANHOREGISTRO)+T_CABECALHO);
+		fclose(saida);
 
 	}
 

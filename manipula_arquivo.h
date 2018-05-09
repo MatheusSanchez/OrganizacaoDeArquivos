@@ -10,6 +10,7 @@
 #define DATANULA "0000000000"
 #define TAMANHOREGISTRO 112
 #define T_CABECALHO 5
+#define T_DATA 10
 #define OCUPADOS 41
 
 struct registro {
