@@ -41,6 +41,17 @@ int main (int argc, char ** argv) {
 		ImprimeRegistro(saida,(RRN*TAMANHOREGISTRO)+T_CABECALHO);
 		fclose(saida);
 
+	}else if(funcionalidade == 5){
+		int RRN = atoi(*(argv + 2));
+		printf("%d\n", RRN);
+
+		FILE * saida;
+		saida = fopen("saida.bin", "r+"); // para leitura e escrita
+
+		//printf("ola\n");
+		RemoveRegistro(saida, RRN);
+
+		fclose(saida);
 	}
 
 }

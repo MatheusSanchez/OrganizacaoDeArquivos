@@ -43,6 +43,8 @@ run_nomeEndereco: main
 run_RRN: main
 	./main 4 2	
 
+run5: main
+	./main 5 567
 clean: 
 	rm -rf *o main *bin
 

@@ -50,4 +50,6 @@ char* query (FILE* fp, int b_inicial, int b_final);
 
 void ImprimeRegistro(FILE* fp, int b_inicial);
 
+void RemoveRegistro(FILE* saida, int RRN);
+
 #endif

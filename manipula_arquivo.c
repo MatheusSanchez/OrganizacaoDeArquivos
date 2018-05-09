@@ -431,3 +431,42 @@ void ImprimeRegistro(FILE* saida, int b_inicial){ // imprime o registro do byte 
 
 }
 
+void RemoveRegistro(FILE* saida, int RRN)
+{
+	fseek(saida, 0, SEEK_END);
+	int tamanho_arquivo = ftell(saida);
+	fseek(saida, 0, SEEK_SET);
+
+	if(tamanho_arquivo <= (RRN*TAMANHOREGISTRO)+T_CABECALHO){
+		printf("Registro Inexistente.\n"); 
+		return;
+	}
+
+	int topo_pilha;
+	fgetc(saida); //pulo o status do cabeçalho
+	fread(&topo_pilha, sizeof(int), 1, saida);
+	printf("topo_pilha = %d\n", topo_pilha);
+
+	fseek(saida, (RRN*TAMANHOREGISTRO)+T_CABECALHO, SEEK_SET); // vou para o registro a ser removido
+
+	char c = fgetc(saida);
+	printf("c = %c\n", c);
+	if(c == '*'){ // registo ja foi removido
+		
+	}else if(c == '*'){
+		
+		return ;
+	}else{
+
+
+		fseek(saida, (RRN*TAMANHOREGISTRO)+T_CABECALHO, SEEK_SET); // volto pro comeco do registro
+
+		c = '*';
+		fwrite(&c, sizeof(char), 1, saida); // escrevo o * para indicar que o registro foi removido
+		fwrite(&topo_pilha, sizeof(int), 1, saida); // escrevo o topo da pilha no registro
+		fseek(saida, 1, SEEK_SET); //acesso o topo da pilha
+		fwrite(&RRN, sizeof(int), 1, saida); //escrevo o registro removido no topo da pilha
+
+		printf("Registro Removido com Sucesso\n");
+	}
+}
