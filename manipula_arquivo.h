@@ -8,15 +8,14 @@
 
 #define bool int
 #define true 1
-#define false 00 // pq o miojao quis
+#define false 0 
+#define arquivoSaida "saida.bin"
+#define arquivoEntrada "entrada.csv"
 
-#define TABOM 0
-#define DEURUIM 42
 #define DATANULA "0000000000"
 #define TAMANHOREGISTRO 112
 #define T_CABECALHO 5
 #define T_DATA 10
-#define OCUPADOS 41
 
 struct registro {
 	int codEscola;

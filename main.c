@@ -32,22 +32,33 @@ int main (int argc, char ** argv) {
 		printf("%d\n", RRN);
 
 		FILE * saida;
-		saida = fopen("saida.bin", "rb");
+		saida = abreArquivo(arquivoSaida);
 
-		ImprimeRegistro(saida,(RRN*TAMANHOREGISTRO)+T_CABECALHO);
+		if(saida == NULL){
+			printf("Falha no processamento do arquivo.\n");
+		}else if(ImprimeRegistro(saida, RRN) == false){
+			printf("Registro inexistente.\n");
+		}
+
 		fclose(saida);
 
 	}else if(funcionalidade == 5){
+		
 		int RRN = atoi(*(argv + 2));
 		printf("%d\n", RRN);
 
 		FILE * saida;
-		saida = fopen("saida.bin", "r+"); // para leitura e escrita
+		saida = fopen(arquivoSaida, "r+"); // para leitura e escrita
 
-		//printf("ola\n");
-		RemoveRegistro(saida, RRN);
+		if(saida == NULL){
+			printf("Falha no processamento do arquivo.\n");
+		}else{
+			RemoveRegistro(saida, RRN);	
+		}		
 
 		fclose(saida);
+
+
 	}else if(funcionalidade == 6){
 		// Registro p;
 

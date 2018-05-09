@@ -41,7 +41,7 @@ run_nomeEndereco: main
 	./main 3 'endereco' 'RUA MOGEIRO'		
 
 run_RRN: main
-	./main 4 2	
+	./main 4 1	
 
 run5: main
 	./main 5 1

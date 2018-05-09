@@ -38,7 +38,7 @@ char * le_tamanho_variavel(FILE * posicao_atual, int * tamanho_campo) {
 	return palavra_lida;
 }
 
-Arquivo le_dados(char * nome_arquivo) {
+Arquivo le_dados(char * nome_arquivo) { //funcao 1
 
 	FILE * fp = NULL;
 	
@@ -66,8 +66,8 @@ Arquivo le_dados(char * nome_arquivo) {
 		
 		// acessa o Arquivo no vetor de registros e salva em cada elemento
 		// da struct o que lhe é destinado
-
 		// Leio o codigo da escola e pulo o ;
+
 		fscanf(fp,"%d",&(novo.registros_lidos[i].codEscola));
 		fgetc(fp);
 
@@ -117,14 +117,14 @@ Arquivo le_dados(char * nome_arquivo) {
 // Funcao que recebe o arquivo e o numero do RRN atual e retorna o numero de bytes que faltam para chegar no proximo registro
 int bytesRestantes(FILE* fp, int RRN){  
 
-	long int posicao_atual = ftell(fp); // Posicao depois do registro inserido (tirando o cabecalho)
-
+	long int posicao_atual = ftell(fp)  - T_CABECALHO; // Posicao depois do registro inserido (tirando o cabecalho)
+ 
 		if((posicao_atual % TAMANHOREGISTRO) != 0){ // Se não estivermos em um multiplo do tamanho do registro, temos que completar o registro
 
 			// Byte Inicial do Proximo RRN = 112 *prox RRN - Tamanho do Cabeçalho
 			// Retorna o Byte Inicial do proximo RRN - posicao atual
 
-			return ((TAMANHOREGISTRO*(RRN+1)) - T_CABECALHO) - (posicao_atual); 
+			return ((TAMANHOREGISTRO*(RRN+1))) - (posicao_atual); 
 		}
 
 }
@@ -155,7 +155,7 @@ void arquivo_saida(Arquivo *entrada) {
 
 
 	FILE * fp;
-	fp = fopen("saida.bin", "wb");
+	fp = fopen(arquivoSaida, "wb");
 	
 	//Escreve o Registro de Cabeçalho
 	
@@ -166,27 +166,29 @@ void arquivo_saida(Arquivo *entrada) {
 	for (int i = 0; i < entrada->n_registros_lidos; ++i){
 		EscreveRegistro(fp, entrada->registros_lidos[i], i);
 	}	
-	
+
 	fechaArquivo(fp);
 	
+	printf("%s\n", "Arquivo carregado.");
+
 }
 
 // imprime o registro com o RRN passado
-void ImprimeRegistro(FILE* fp, int RRN){ 
+int ImprimeRegistro(FILE* fp, int RRN){ 
 	
 	int tamanho_arquivo = tamArquivo(fp);
 
 	// Se o byte inicial do RRN pedido for maior que o tamanho do arquivo
 	if(tamanho_arquivo < (RRN*TAMANHOREGISTRO+T_CABECALHO)){
-		printf("Falha no processamento do arquivo\n");
 		return;
 	}
+
 	// Le o primeiro byte e ve se o registro foi removido
 	char c = fgetc(fp);
 	fseek(fp, (RRN*TAMANHOREGISTRO+T_CABECALHO), SEEK_SET);
 
 	if(c == '*'){
-		return ;
+		return false;
 	}
 
 	//Imprime o Registro
@@ -194,25 +196,36 @@ void ImprimeRegistro(FILE* fp, int RRN){
 
 	printf("%d %s %s %d %s %d %s %d %s\n", r->codEscola, r->dataInicio, r->dataFinal, r->indicador_tamanho_escola, r->nomeEscola, r->indicador_tamanho_municipio, r->municipio, r->indicador_tamanho_endereco, r->endereco);
 
+	return true;
 }
 
 void exibe_registros(){ // função 2
 
 	FILE * fp;
-	fp = fopen("saida.bin", "rb");
+	fp = abreArquivo(arquivoSaida);
+
+	if(fp == NULL){
+		printf("Falha no processamento do arquivo.");
+	}
+
 	int tamanho_arquivo = tamArquivo(fp);
+
 
 	// Anda até o primeiro registro
 	fseek(fp, T_CABECALHO, SEEK_SET); // Pula os 5 bytes de Registro de Cabeçalho
-
-
-	for(int i = 0; ftell(fp) < tamanho_arquivo; i++){ // Enquanto houver registros para ler
+	int i;
+	for(i = 0; ftell(fp) < tamanho_arquivo; i++){ // Enquanto houver registros para ler
 		
 		//Imprime o Registro e Pula para o proximo
 		ImprimeRegistro(fp, i);
 		proxRegistro(fp);
 		
 	}
+	if(i == 0){
+		printf("Registro inexistente.\n");
+	}
+
+
 	fechaArquivo(fp);
 }
 
@@ -223,7 +236,7 @@ void func3_auxiliar(FILE* saida, char* nome_campo, char* val_campo){
 	char *str;
 
 	
-	int tamanho_arquivo = tamArquivo(fp);
+	int tamanho_arquivo = tamArquivo(saida);
 	fseek(saida, T_CABECALHO, SEEK_SET); // PULA OS 5 BYTES DO REGISTRO DE CABEÇALHO
 
 
@@ -413,9 +426,6 @@ void RemoveRegistro(FILE* saida, int RRN)
 	char c = fgetc(saida);
 	printf("c = %c\n", c);
 	if(c == '*'){ // registo ja foi removido
-		
-	}else if(c == '*'){
-		
 		return ;
 	}else{
 
