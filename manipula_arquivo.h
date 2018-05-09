@@ -11,11 +11,8 @@
 #define false 0 
 #define arquivoSaida "saida.bin"
 #define arquivoEntrada "entrada.csv"
-
-#define DATANULA "0000000000"
 #define TAMANHOREGISTRO 112
 #define T_CABECALHO 5
-#define T_DATA 10
 
 struct registro {
 	int codEscola;
@@ -41,32 +38,36 @@ struct arquivo {
 
 typedef struct arquivo Arquivo;
 
+//Funcionalidade 1
 char * le_tamanho_variavel(FILE * posicao_atual, int * tamanho_campo );
-
 Arquivo le_dados(char * nome_arquivo);
-
-
 void arquivo_saida(Arquivo *entrada);
-
+//Funcionalidade 2
 void exibe_registros();
-void func3(FILE* saida, char* nome_campo, char* val_campo);
-char* query (FILE* fp, int b_inicial, int b_final);
-
-bool ImprimeRegistro(FILE* fp, int b_inicial);
-
+//Funcionalidade 3
+void buscaCampo(FILE* saida, char* nome_campo, char* val_campo);
+void compCampo(char* nome_campo, char* val_campo, Registro *r);
+//Funcionalidade 4
+bool ImprimeRegistro(FILE* fp, int RRN);
+//Funcionalidade 5
 void RemoveRegistro(FILE* saida, int RRN);
-
+//Funcionalidade 6
 void Insercao(FILE* saida, int codEscola,  char* dataInicio,  char* dataFinal,  char* nome_escola,  char* municipio,  char*endereco);
+//Funcionalidade 7
 void updateRegistro(FILE* saida, int codEscola,  char* dataInicio,  char* dataFinal,  char* nome_escola,  char* municipio,  char*endereco, int RRN);
-void func8();
-void func9();
-FILE * abreArquivo(char *nome_arquivo);
-bool existeReg(int RRN, FILE * fp);
-void fechaArquivo(FILE *fp);
+//Funcionalidade 8
+void CompactaArquivo();
+//Funcionalidade 9
+void allRegRemovidos();
 
-Registro *reg( FILE *fp, int RRN);
-long int tamArquivo(FILE *fp);
-bool proxRegistro(FILE *fp);
-void free_reg(Registro *reg);
+//Funcoes auxiliares
+FILE * abreArquivo(char *nome_arquivo); // abre o arquivo em modo r+
+bool existeReg(int RRN, FILE * fp); // verifica se o registro existe
+void fechaArquivo(FILE *fp); // fecha o arquivo
+int bytesRestantes(FILE* fp, int RRN);
+Registro *reg( FILE *fp, int RRN); // le o registro do RRN dado e retorna a struct
+long int tamArquivo(FILE *fp); // retorna o numero de bytes do arquivo
+bool proxRegistro(FILE *fp); // anda o ponteiro do arquivo para o proximo registro
 
+void EscreveRegistro(FILE* fp,Registro reg, int RRN); // Esreve o Registro no arquivo no RRN dado
 #endif

@@ -13,6 +13,7 @@ int main (int argc, char ** argv) {
 		Arquivo dados_brutos = le_dados(nome_arquivo);
 		arquivo_saida(&dados_brutos);
 		
+		//free_Arquivo(dados_brutos);
 
 	}else if(funcionalidade == 2){ // exibição de todos os registros no terminal
 		exibe_registros();
@@ -23,7 +24,13 @@ int main (int argc, char ** argv) {
 		FILE * saida;
 		saida = fopen("saida.bin", "rb");
 
-		func3(saida, nome_campo, *(argv+3));
+		if(saida == NULL){
+			printf("Falha no processamento do arquivo.\n");
+		}else{
+			buscaCampo(saida, nome_campo, *(argv+3));	
+		}
+
+		
 		fclose(saida);
 
 	}else if(funcionalidade == 4) {
@@ -90,13 +97,13 @@ int main (int argc, char ** argv) {
 
 	}else if(funcionalidade == 8){
 
-		func8();
+		CompactaArquivo();
 
 	}else if(funcionalidade == 9){
 
-		func9();
+		allRegRemovidos();
 	}
 
-
+	return 0;
 }
 
