@@ -19,7 +19,7 @@
 #define OCUPADOS 41
 
 struct registro {
-	int codigo_escola;
+	int codEscola;
 	char data_inicio[11];
 	char data_final[11];
 	int indicador_tamanho_escola;

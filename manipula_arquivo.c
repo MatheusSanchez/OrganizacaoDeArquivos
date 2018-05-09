@@ -71,11 +71,11 @@ Arquivo le_dados(char * nome_arquivo) {
 		// acessa o Arquivo no vetor de registros e salva em cada elemento
 		// da struct o que lhe é destinado
 
-		fscanf(pa,"%d",&((novo.registros_lidos + n_registros_lidos)->codigo_escola));
+		fscanf(pa,"%d",&((novo.registros_lidos + n_registros_lidos)->codEscola));
 		fgetc(pa);
 
 		// substituido
-		// fread(&((novo.registros_lidos + n_registros_lidos)->codigo_escola), 1, sizeof(int), pa);
+		// fread(&((novo.registros_lidos + n_registros_lidos)->codEscola), 1, sizeof(int), pa);
 
 		(novo.registros_lidos + n_registros_lidos)->nome_escola = 
 		le_tamanho_variavel(pa, &((novo.registros_lidos + n_registros_lidos)->indicador_tamanho_escola));
@@ -144,7 +144,7 @@ void  arquivo_saida(Arquivo *entrada) {
 
 	for (int i = 0; i < entrada->n_registros_lidos; ++i){
 		
-		fwrite(&(entrada->registros_lidos[i].codigo_escola), sizeof(int), 1, saida);
+		fwrite(&(entrada->registros_lidos[i].codEscola), sizeof(int), 1, saida);
 		fwrite(&entrada->registros_lidos[i].data_inicio, sizeof(char), 10, saida);
 		fwrite(&entrada->registros_lidos[i].data_final, sizeof(char), 10, saida);
 		fwrite(&entrada->registros_lidos[i].indicador_tamanho_escola, sizeof(int), 1, saida);
@@ -163,7 +163,7 @@ void  arquivo_saida(Arquivo *entrada) {
 			fwrite(&c, sizeof(char), bytes_faltantes, saida); // preenchendo o fim do arquivo
 		}
 
-		// fprintf(saida1, "%d", entrada->registros_lidos[i].codigo_escola); // gravando codigo da escola	
+		// fprintf(saida1, "%d", entrada->registros_lidos[i].codEscola); // gravando codigo da escola	
  	// 	fprintf(saida1, "%s%s", entrada->registros_lidos[i].data_inicio,entrada->registros_lidos[i].data_final); // gravando as datas	
  	// 	fprintf(saida1, "%d", entrada->registros_lidos[i].indicador_tamanho_escola); // gravando indicador de tamanho do nome da escola
  	// 	fprintf(saida1, "%s", entrada->registros_lidos[i].nome_escola); // gravando nome da escola
@@ -297,8 +297,8 @@ void func3(FILE* saida, char* nome_campo, char* val_campo){
 	int b_inicial, tamanho;
 	char FLAG_codEscola = 0; // 0 se não é nome da escola, 1 se é
 
-	int codigo_escola_lido;
-	int codigo_escola_pedido = atoi(val_campo);
+	int codEscola_lido;
+	int codEscola_pedido = atoi(val_campo);
 
 
 	if(strcmp("codEscola",nome_campo) == 0){ // byte 0 + cabecalho
@@ -331,9 +331,9 @@ void func3(FILE* saida, char* nome_campo, char* val_campo){
 
 		if(FLAG_codEscola == 1){ // se o campo pedido for o codigo da escola
 			//leio do arquivo como um int	
-			fread(&codigo_escola_lido, sizeof(int), 1, saida);	
+			fread(&codEscola_lido, sizeof(int), 1, saida);	
 			fseek(saida, (TAMANHOREGISTRO*i)+T_CABECALHO, SEEK_SET);
-			if(codigo_escola_lido == codigo_escola_pedido){		
+			if(codEscola_lido == codEscola_pedido){		
 				ImprimeRegistro(saida, (TAMANHOREGISTRO*i)+T_CABECALHO);
 			}
 
@@ -395,7 +395,7 @@ void ImprimeRegistro(FILE* saida, int b_inicial){ // imprime o registro do byte 
 	/*if(c == '*'){
 		return ;
 	}*/
-	int codigo_escola; 
+	int codEscola; 
 	
 	char data_ini[11]; // OS 10 BYTES DA DATA MAIS O \0
 	char data_fim[11];
@@ -409,7 +409,7 @@ void ImprimeRegistro(FILE* saida, int b_inicial){ // imprime o registro do byte 
 	int tam_endereco;
 	char* endereco = NULL;
 
-	fread(&codigo_escola, sizeof(int), 1, saida); // 4 bytes
+	fread(&codEscola, sizeof(int), 1, saida); // 4 bytes
 	fread(data_ini, sizeof(char), 10, saida);  // 10*1 byte
 	fread(data_fim, sizeof(char), 10, saida); // 10*1 byte
 
@@ -427,7 +427,7 @@ void ImprimeRegistro(FILE* saida, int b_inicial){ // imprime o registro do byte 
 	endereco = realloc(endereco, (tam_endereco+1) * sizeof(char)); // REALLOCA A STRING COM O TAMANHO DO CAMPO +1 PARA CABER O \0	
 	fread(endereco, sizeof(char), tam_endereco, saida); // tam_endereco*1 byte
 
-	printf("%d %s %s %d %s %d %s %d %s\n", codigo_escola,data_ini,data_fim,tam_nome,nome_escola,tam_municipio, municipio, tam_endereco, endereco);
+	printf("%d %s %s %d %s %d %s %d %s\n", codEscola,data_ini,data_fim,tam_nome,nome_escola,tam_municipio, municipio, tam_endereco, endereco);
 
 	fseek(saida, b_inicial, SEEK_SET);
 
@@ -718,4 +718,75 @@ bool existeReg(int RRN, FILE * fp){ //verifica se o registro é valido (isto é,
 
 }
 
-		
+
+Registro *reg(int RRN, FILE *fp){ //retorna um registro no RRN passado
+								 // OBS garantir que o registro existe e o ponteiro do arquivo é válido;
+
+	long int posicao_atual = ftell(fp);
+	fseek(fp, TAMANHOREGISTRO*RRN + T_CABECALHO, SEEK_SET);							 	
+
+	Registro* reg = (Registro *)malloc(sizeof(Registro));
+
+	fread(&(reg->codEscola), sizeof(int), 1, saida); // 4 bytes
+	fread(reg->data_inicio, sizeof(char), 10, saida);  // 10*1 byte
+	fread(reg->data_fim, sizeof(char), 10, saida); // 10*1 byte
+
+	reg->data_ini[10] = reg->data_fim[10] = '\0';
+
+	fread(&(reg->indicador_tamanho_escola), sizeof(int), 1, saida); // 4 bytes
+	reg->nome_escola = realloc(reg->nome_escola, (reg->indicador_tamanho_escola+1) * sizeof(char)); // REALLOCA A STRING COM O TAMANHO DO CAMPO +1 PARA CABER O \0
+	fread(reg->nome_escola, sizeof(char), (reg->indicador_tamanho_escola), saida); // tam_nome*1 byte
+
+	fread(&(reg->indicador_tamanho_municipio), sizeof(int), 1, saida); // 4 bytes
+	reg->municipio = realloc(reg->municipio, (reg->indicador_tamanho_municipio+1) * sizeof(char)); // REALLOCA A STRING COM O TAMANHO DO CAMPO +1 PARA CABER O \0
+	fread(reg->municipio, sizeof(char), (reg->indicador_tamanho_municipio), saida); // tam_nome*1 byte
+
+	fread(&(reg->indicador_tamanho_endereco), sizeof(int), 1, saida); // 4 bytes
+	reg->endereco = realloc(reg->endereco, (reg->indicador_tamanho_endereco+1) * sizeof(char)); // REALLOCA A STRING COM O TAMANHO DO CAMPO +1 PARA CABER O \0
+	fread(reg->endereco, sizeof(char), (reg->indicador_tamanho_endereco), saida); // tam_nome*1 byte
+
+	fseek(fp, posicao_atual, SEEK_SET);	 // voltamos para posicao inicial da funcao
+
+	return reg;
+}
+
+long int tamArquivo(FILE *fp){ // retorna o tamanho total do arquivo
+
+	long int posicao_atual = ftell(fp); // posicao atual do arquivpo
+
+	fseek(fp, 0, SEEK_END); 
+	long int tamanho_arquivo = ftell(fp);  
+
+	fseek(fp, posicao_atual, SEEK_SET); // voltando posicao atual do arquivo
+
+	return tamanho_arquivo;
+}
+
+bool proxRegistro(FILE *fp){ // avança um registro no arquivo "fp"
+				
+	// obs: o ponteiro do arquivo deve estar no primeiro byte de um registro !!!
+
+	fseek(fp, TAMANHOREGISTRO, SEEK_CUR); // somamos o tamanho do registro no registro atual
+
+	if(ftell(fp) < tamArquivo(fp)){
+
+		return true;
+	}else{
+
+		return false;
+	}
+}
+
+
+void free_reg(Registro *reg){
+
+	if(reg == NULL){
+		printf("O registro não existe :(\n");
+	}else{
+		free(reg->nome_escola);
+		free(reg->municipio);
+		free(reg->endereco);
+		free(reg);
+	}	
+
+}		
