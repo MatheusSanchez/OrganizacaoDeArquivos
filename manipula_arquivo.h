@@ -5,6 +5,11 @@
 #include <stdio.h>
 #include <string.h>
 
+
+#define bool int
+#define true 1
+#define false 00 // pq o miojao quis
+
 #define TABOM 0
 #define DEURUIM 42
 #define DATANULA "0000000000"
@@ -53,6 +58,10 @@ void ImprimeRegistro(FILE* fp, int b_inicial);
 void RemoveRegistro(FILE* saida, int RRN);
 
 void Insercao(FILE* saida, int codEscola,  char* dataInicio,  char* dataFinal,  char* nome_escola,  char* municipio,  char*endereco);
-
-
+void updateRegistro(FILE* saida, int codEscola,  char* dataInicio,  char* dataFinal,  char* nome_escola,  char* municipio,  char*endereco, int RRN);
+void func8();
+void func9();
+FILE * abreArquivo(char *nome_arquivo);
+bool existeReg(int RRN, FILE * fp);
+void fechaArquivo(FILE *fp);
 #endif

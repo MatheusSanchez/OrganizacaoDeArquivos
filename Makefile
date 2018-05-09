@@ -44,9 +44,20 @@ run_RRN: main
 	./main 4 2	
 
 run5: main
-	./main 5 0
+	./main 5 1
+
 run6: main
-	./main 6 49678012 0 0 'EE DISCIPLINA' 'SAO CARLOS' ''	
+	./main 6 49678012 0 0 'EE DISCIPLINA' 'SAO CARLOS' ''
+
+run7: main
+	./main 7 1 35000012 12/12/0012 0 'EE DISCIPLINA' 'SAO CARLOS' '123456'
+
+run8: main
+	./main 8
+
+run9: main
+	./main 9
+
 clean: 
 	rm -rf *o main *bin
 
