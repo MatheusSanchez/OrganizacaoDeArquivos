@@ -44,7 +44,7 @@ run_RRN: main
 	./main 4 1	
 
 run5: main
-	./main 5 1
+	./main 5 0
 
 run6: main
 	./main 6 49678012 0 0 'EE DISCIPLINA' 'SAO CARLOS' ''

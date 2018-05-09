@@ -52,7 +52,7 @@ void exibe_registros();
 void func3(FILE* saida, char* nome_campo, char* val_campo);
 char* query (FILE* fp, int b_inicial, int b_final);
 
-void ImprimeRegistro(FILE* fp, int b_inicial);
+bool ImprimeRegistro(FILE* fp, int b_inicial);
 
 void RemoveRegistro(FILE* saida, int RRN);
 
@@ -68,4 +68,5 @@ Registro *reg( FILE *fp, int RRN);
 long int tamArquivo(FILE *fp);
 bool proxRegistro(FILE *fp);
 void free_reg(Registro *reg);
+
 #endif

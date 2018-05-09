@@ -127,6 +127,7 @@ int bytesRestantes(FILE* fp, int RRN){
 			return ((TAMANHOREGISTRO*(RRN+1))) - (posicao_atual); 
 		}
 
+		return 0;
 }
 
 //Funcao que receber o arquivo e um registro e escreve o registro no arquivo. Necessario saber o RRN
@@ -174,13 +175,13 @@ void arquivo_saida(Arquivo *entrada) {
 }
 
 // imprime o registro com o RRN passado
-int ImprimeRegistro(FILE* fp, int RRN){ 
+bool ImprimeRegistro(FILE* fp, int RRN){ 
 	
 	int tamanho_arquivo = tamArquivo(fp);
 
 	// Se o byte inicial do RRN pedido for maior que o tamanho do arquivo
 	if(tamanho_arquivo < (RRN*TAMANHOREGISTRO+T_CABECALHO)){
-		return;
+		return false;
 	}
 
 	// Le o primeiro byte e ve se o registro foi removido
@@ -442,7 +443,7 @@ void RemoveRegistro(FILE* saida, int RRN)
 	}
 }
 
-void Insercao(FILE* saida, int codEscola,  char* dataInicio,  char* dataFinal,  char* nome_escola,  char* municipio,  char*endereco){
+void Insercao(FILE* saida, int codEscola,  char* dataInicio,  char* dataFinal,  char* nomeEscola,  char* municipio,  char*endereco){
 
 	fseek(saida, 1, SEEK_SET); // indo para o topo da pilha
 
@@ -452,9 +453,38 @@ void Insercao(FILE* saida, int codEscola,  char* dataInicio,  char* dataFinal,  
 	fread(&RRN, sizeof(int), 1, saida); // leio do topo da pilha onde irei inserir
 	int tamanho_arquivo;
 
+	Registro reg;
+
+	reg.codEscola = codEscola;				// salvando o registro a ser escrito no arquivo
+
+	if(strcmp(dataInicio, "0") == 0){
+		strcpy(reg.dataInicio,aux);
+	}else{
+		strcpy(reg.dataInicio,dataInicio);
+	}
+
+	if(strcmp(dataFinal, "0") == 0){
+		strcpy(reg.dataFinal,aux);
+	}else{
+		strcpy(reg.dataFinal,dataFinal);
+	}
+
+	reg.indicador_tamanho_escola = strlen(nomeEscola);
+	reg.nomeEscola = nomeEscola;
+
+	reg.indicador_tamanho_municipio = strlen(municipio);
+	reg.municipio = municipio;
+
+	reg.indicador_tamanho_endereco = strlen(endereco);
+	reg.endereco = endereco;
+	
+
+
 	if(RRN == -1) {// se o valor lido for -1 entao devo inserir no final do arquivo
 		fseek(saida, 0, SEEK_END); // vou para o final do arquivo
 		tamanho_arquivo = ftell(saida); // guardo o tamanho atual do arquivo
+		RRN = (tamanho_arquivo - T_CABECALHO)/TAMANHOREGISTRO; // e acho o ultimo RRN
+
 	}else{ 	
 	// senao
 		// acesso o RRN lido
@@ -472,131 +502,49 @@ void Insercao(FILE* saida, int codEscola,  char* dataInicio,  char* dataFinal,  
 
 	}
 
-	//inserindo o registro
+	EscreveRegistro(saida,reg,RRN);
 
-	fwrite(&codEscola, sizeof(int), 1, saida);
+	printf("Registro inserido com sucesso.\n");
+}
 
-	//escrevendo dataInicio
-	if(strcmp(dataInicio, "0") == 0){ // se a data inicio for nula, inserindo a string aux
-		fwrite(aux, sizeof(char), 10, saida);
-
-	}else{
-		fwrite(dataInicio, sizeof(char), 10, saida);
-	}
-
-	//escrevendo datafinal
-	if(strcmp(dataFinal, "0") == 0){ // se a data final for nula , inserindo a string aux
-		fwrite(aux, sizeof(char), 10, saida);
-
-	}else{
-		fwrite(dataFinal, sizeof(char), 10, saida);
-	}
-
-	// tamanho das strings lidas no terminal
-	int tam_escola = strlen(nome_escola);
-	int tam_municipio = strlen(municipio);
-	int tam_endereco = strlen(endereco);
-
-	// escrevo o tamanho e a strings de nome, municipio e endereco, respectivamente
-	fwrite(&tam_escola, sizeof(int), 1, saida);
-	fwrite(nome_escola, sizeof(char), tam_escola, saida);
-
-
-	fwrite(&tam_municipio, sizeof(int), 1, saida);
-	fwrite(municipio, sizeof(char), tam_municipio, saida);
-
-	fwrite(&tam_endereco, sizeof(int), 1, saida);
-	fwrite(endereco, sizeof(char), tam_endereco, saida);
-
-
-	// calculo o numero de bytes restantes para preencher os 112 bytes do registro
-	long int posicao_atual;
-	int bytes_faltantes;
-
-	posicao_atual = ftell(saida);
-
-	// se o RRN for -1, entao estou inserindo no final do arquivo
-	if(RRN == -1){
-		if((posicao_atual % TAMANHOREGISTRO) != 0){ // se não estivermos em um multiplo do tamanho do registro, temos que completar o registro
-
-				bytes_faltantes = ((TAMANHOREGISTRO+tamanho_arquivo) - (posicao_atual)); // qntd de bytes para preencher = tamanho do arquivo antes da insercao + tamanho do registro - a posicao atual
-
-				fwrite(&aux, sizeof(char), bytes_faltantes, saida); // preenchendo o fim do arquivo
-			}
-		}else{
-		// se for inserido em cima de um registro removido
-		// entao
-
-		if((posicao_atual % TAMANHOREGISTRO) != 0){ // se não estivermos em um multiplo do tamanho do registro, temos que completar o registro
-
-
-				posicao_atual -= T_CABECALHO; // necessario para quando for inserir em cima de um registro ja removido
-				bytes_faltantes = (TAMANHOREGISTRO*(RRN+1)) - (posicao_atual); // qntd de bytes para preencher = tamanho do registro * o numero do proximo RRN (RRN+1) - posicao final do registro atual;
-
-				
-				fwrite(&aux, sizeof(char), bytes_faltantes, saida); // preenchendo o fim do arquivo
-			}
-		}
-
-/*	posicao_atual = ftell(saida);
-
-	if(((posicao_atual-5) % 112) ==0)
-	printf("ola\n");		
-*/
-	}
-
-void updateRegistro(FILE* saida, int codEscola,  char* dataInicio,  char* dataFinal,  char* nome_escola,  char* municipio,  char*endereco, int RRN){
+void updateRegistro(FILE* saida, int codEscola,  char* dataInicio,  char* dataFinal,  char* nomeEscola,  char* municipio,  char*endereco, int RRN){
 
 
 	char aux[11] = "0000000000\0";
-	fseek(saida, (RRN*TAMANHOREGISTRO)+T_CABECALHO, SEEK_SET);
-	fwrite(&codEscola, sizeof(int), 1, saida);
+	Registro reg;
 
-		//escrevendo dataInicio
-		if(strcmp(dataInicio, "0") == 0){ // se a data inicio for nula, inserindo a string aux
-			fwrite(aux, sizeof(char), 10, saida);
+	reg.codEscola = codEscola;				// salvando o registro a ser escrito no arquivo
 
-		}else{
-			fwrite(dataInicio, sizeof(char), 10, saida);
-		}
+	if(strcmp(dataInicio, "0") == 0){
+		strcpy(reg.dataInicio,aux);
+	}else{
+		strcpy(reg.dataInicio,dataInicio);
+	}
 
-		//escrevendo datafinal
-		if(strcmp(dataFinal, "0") == 0){ // se a data final for nula , inserindo a string aux
-			fwrite(aux, sizeof(char), 10, saida);
+	if(strcmp(dataFinal, "0") == 0){
+		strcpy(reg.dataFinal,aux);
+	}else{
+		strcpy(reg.dataFinal,dataFinal);
+	}
 
-		}else{
-			fwrite(dataFinal, sizeof(char), 10, saida);
-		}
+	reg.indicador_tamanho_escola = strlen(nomeEscola);
+	reg.nomeEscola = nomeEscola;
 
-		// tamanho das strings lidas no terminal
-		int tam_escola = strlen(nome_escola);
-		int tam_municipio = strlen(municipio);
-		int tam_endereco = strlen(endereco);
+	reg.indicador_tamanho_municipio = strlen(municipio);
+	reg.municipio = municipio;
 
-		// escrevo o tamanho e a strings de nome, municipio e endereco, respectivamente
-		fwrite(&tam_escola, sizeof(int), 1, saida);
-		fwrite(nome_escola, sizeof(char), tam_escola, saida);
+	reg.indicador_tamanho_endereco = strlen(endereco);
+	reg.endereco = endereco;
 
+	if(existeReg(RRN, saida) == true){		// se o registro existe
 
-		fwrite(&tam_municipio, sizeof(int), 1, saida);
-		fwrite(municipio, sizeof(char), tam_municipio, saida);
+		EscreveRegistro(saida,reg,RRN);		//escreva
 
-		fwrite(&tam_endereco, sizeof(int), 1, saida);
-		fwrite(endereco, sizeof(char), tam_endereco, saida);
+		printf("Registro alterado com sucesso.\n");
+	}else{
+		printf("Registro inexistente.\n");
 
-
-		// calculo o numero de bytes restantes para preencher os 112 bytes do registro
-		long int posicao_atual;
-		int bytes_faltantes;
-
-		posicao_atual = ftell(saida);
-
-		
-		if((posicao_atual % TAMANHOREGISTRO) != 0){ // se não estivermos em um multiplo do tamanho do registro, temos que completar o registro
-			posicao_atual -= T_CABECALHO; // necessario para quando for inserir em cima de um registro ja removido
-			bytes_faltantes = (TAMANHOREGISTRO*(RRN+1)) - (posicao_atual); // qntd de bytes para preencher = tamanho do registro * o numero do proximo RRN (RRN+1) - posicao final do registro atual;	
-			fwrite(&aux, sizeof(char), bytes_faltantes, saida); // preenchendo o fim do arquivo
-		}
+	}
 }
 
 void func9(){
