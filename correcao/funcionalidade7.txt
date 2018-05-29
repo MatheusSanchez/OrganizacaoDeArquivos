@@ -1,0 +1,71 @@
+Arquivo carregado.
+0
+topo_pilha = -1
+c = Ì
+Registro Removido com Sucesso
+1363
+topo_pilha = 0
+c = x
+Registro Removido com Sucesso
+163
+topo_pilha = 1363
+c = ‹
+Registro Removido com Sucesso
+136
+topo_pilha = 163
+c = V
+Registro Removido com Sucesso
+2
+topo_pilha = 136
+c = ä
+Registro Removido com Sucesso
+1263
+topo_pilha = 2
+c = 
+Registro Removido com Sucesso
+1336
+topo_pilha = 1263
+c = ë
+Registro Removido com Sucesso
+232
+topo_pilha = 1336
+c = ]
+Registro Removido com Sucesso
+399
+topo_pilha = 232
+c = ‰
+Registro Removido com Sucesso
+402
+topo_pilha = 399
+c = §
+Registro Removido com Sucesso
+106
+topo_pilha = 402
+c = 
+Registro Removido com Sucesso
+22
+topo_pilha = 106
+c = §
+Registro Removido com Sucesso
+13
+topo_pilha = 22
+c = L
+Registro Removido com Sucesso
+16
+topo_pilha = 13
+c = p
+Registro Removido com Sucesso
+1396
+topo_pilha = 16
+c = Ü
+Registro Removido com Sucesso
+29
+topo_pilha = 1396
+c = õ
+Registro Removido com Sucesso
+Registro alterado com sucesso.
+Registro inexistente.
+Registro alterado com sucesso.
+Registro alterado com sucesso.
+Registro alterado com sucesso.
+Registro alterado com sucesso.
