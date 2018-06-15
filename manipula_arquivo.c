@@ -273,7 +273,9 @@ bool ImprimeRegistro(FILE* fp, int RRN){
 	//Imprime o Registro
 	Registro* r = reg(fp, RRN);
 
-	printf("%d %s %s %d %s %d %s %d %s\n", r->codEscola, r->dataInicio, r->dataFinal, r->indicador_tamanho_escola, r->nomeEscola, r->indicador_tamanho_municipio, r->municipio, r->indicador_tamanho_endereco, r->endereco);
+
+
+	printf("%d %d %s %s %d %s %d %s %d %s\n", RRN, r->codEscola, r->dataInicio, r->dataFinal, r->indicador_tamanho_escola, r->nomeEscola, r->indicador_tamanho_municipio, r->municipio, r->indicador_tamanho_endereco, r->endereco);
 	
 	return true;
 }
@@ -393,7 +395,6 @@ void updateRegistro(FILE* saida, int codEscola,  char* dataInicio,  char* dataFi
 		strcpy(reg.dataInicio,aux);
 	}else{
 		strcpy(reg.dataInicio,dataInicio);
-		//printf("reg.dataInicio = %s\n", reg.dataInicio);
 	}
 
 	if(strcmp(dataFinal, "0") == 0){
@@ -414,6 +415,8 @@ void updateRegistro(FILE* saida, int codEscola,  char* dataInicio,  char* dataFi
 	//printf("%d %s %s %d %s %d %s %d %s\n", reg.codEscola, reg.dataInicio, reg.dataFinal, reg.indicador_tamanho_escola, reg.nomeEscola, reg.indicador_tamanho_municipio, reg.municipio, reg.indicador_tamanho_endereco, reg.endereco);
 
 	if(existeReg(RRN, saida) == true){		// se o registro existe
+
+		fseek(saida, (RRN*TAMANHOREGISTRO)+T_CABECALHO, SEEK_SET);
 
 		EscreveRegistro(saida,reg,RRN);		//escreva
 
