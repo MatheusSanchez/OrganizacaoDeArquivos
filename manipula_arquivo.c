@@ -135,8 +135,8 @@ void EscreveRegistro(FILE* fp,Registro reg, int RRN){
 
 	// Escrevo todo os campos do registro
 	fwrite(&(reg.codEscola), sizeof(int), 1, fp);
-	fwrite(&reg.dataInicio, sizeof(char), 10, fp);
-	fwrite(&reg.dataFinal, sizeof(char), 10, fp);
+	fwrite(reg.dataInicio, sizeof(char), 10, fp);
+	fwrite(reg.dataFinal, sizeof(char), 10, fp);
 	fwrite(&reg.indicador_tamanho_escola, sizeof(int), 1, fp);
 	fwrite(reg.nomeEscola, sizeof(char), reg.indicador_tamanho_escola, fp);
 	fwrite(&reg.indicador_tamanho_municipio, sizeof(int), 1, fp);
@@ -254,6 +254,7 @@ void buscaCampo(FILE* saida, char* nome_campo, char* val_campo){
 // imprime o registro com o RRN passado
 bool ImprimeRegistro(FILE* fp, int RRN){ 
 	
+	fseek(fp, (RRN*TAMANHOREGISTRO+T_CABECALHO), SEEK_SET);
 	int tamanho_arquivo = tamArquivo(fp);
 
 	// Se o byte inicial do RRN pedido for maior que o tamanho do arquivo
@@ -290,13 +291,14 @@ void RemoveRegistro(FILE* saida, int RRN){
 	int topo_pilha;
 	fgetc(saida); //pulo o status do cabeçalho
 	fread(&topo_pilha, sizeof(int), 1, saida);
-	printf("topo_pilha = %d\n", topo_pilha);
+	//printf("topo_pilha = %d\n", topo_pilha);
 
 	fseek(saida, (RRN*TAMANHOREGISTRO)+T_CABECALHO, SEEK_SET); // vou para o registro a ser removido
 
 	char c = fgetc(saida);
-	printf("c = %c\n", c);
+	//printf("c = %c\n", c);
 	if(c == '*'){ // registo ja foi removido
+		printf("Registro Inexistente.\n"); 
 		return ;
 	}else{
 
@@ -383,12 +385,15 @@ void updateRegistro(FILE* saida, int codEscola,  char* dataInicio,  char* dataFi
 	char aux[11] = "0000000000\0";
 	Registro reg;
 
-	reg.codEscola = codEscola;				// salvando o registro a ser escrito no arquivo
+	reg.codEscola = codEscola;			// salvando o registro a ser escrito no arquivo
 
+	//printf("RRN = %d\n", RRN);
+	//printf("reg.codEscola = %d\n", reg.codEscola );
 	if(strcmp(dataInicio, "0") == 0){
 		strcpy(reg.dataInicio,aux);
 	}else{
 		strcpy(reg.dataInicio,dataInicio);
+		//printf("reg.dataInicio = %s\n", reg.dataInicio);
 	}
 
 	if(strcmp(dataFinal, "0") == 0){
@@ -406,11 +411,15 @@ void updateRegistro(FILE* saida, int codEscola,  char* dataInicio,  char* dataFi
 	reg.indicador_tamanho_endereco = strlen(endereco);
 	reg.endereco = endereco;
 
+	//printf("%d %s %s %d %s %d %s %d %s\n", reg.codEscola, reg.dataInicio, reg.dataFinal, reg.indicador_tamanho_escola, reg.nomeEscola, reg.indicador_tamanho_municipio, reg.municipio, reg.indicador_tamanho_endereco, reg.endereco);
+
 	if(existeReg(RRN, saida) == true){		// se o registro existe
 
 		EscreveRegistro(saida,reg,RRN);		//escreva
 
 		printf("Registro alterado com sucesso.\n");
+		//ImprimeRegistro(saida, RRN);
+
 	}else{
 		printf("Registro inexistente.\n");
 

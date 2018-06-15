@@ -36,7 +36,7 @@ int main (int argc, char ** argv) {
 	}else if(funcionalidade == 4) {
 
 		int RRN = atoi(*(argv + 2));
-		printf("%d\n", RRN);
+		//printf("%d\n", RRN);
 
 		FILE * saida;
 		saida = abreArquivo(arquivoSaida);
@@ -52,7 +52,7 @@ int main (int argc, char ** argv) {
 	}else if(funcionalidade == 5){
 		
 		int RRN = atoi(*(argv + 2));
-		printf("%d\n", RRN);
+		//printf("%d\n", RRN);
 
 		FILE * saida;
 		saida = fopen(arquivoSaida, "r+"); // para leitura e escrita
