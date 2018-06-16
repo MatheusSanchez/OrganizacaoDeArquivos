@@ -130,8 +130,27 @@ int bytesRestantes(FILE* fp, int RRN){
 		return 0;
 }
 
+
+void BuscaRegistro(FILE* fp, )
+
 //Funcao que receber o arquivo e um registro e escreve o registro no arquivo. Necessario saber o RRN
 void EscreveRegistro(FILE* fp,Registro reg, int RRN){ 
+
+	FILE* indice_file;
+	indice_file = fopen(arquivoIndice, "wb");
+
+	char status;
+	fread(&status, sizeof(status), 1, indice_file); // Lendo o status do arquivo de indices
+	int noRaiz;
+	fread(&noRaiz, sizeof(noRaiz), 1, indice_file); // Lendo o RRN do noRaiz no arquivo de indices
+
+	fseek(indice_file, (noRaiz*TAMANHOPAGINA) + T_CABECALHO_INDICE, SEEK_SET); // acessando o noRaiz
+
+	Pagina* pag = pag(indice_file, noRaiz);
+
+
+
+
 
 	// Escrevo todo os campos do registro
 	fwrite(&(reg.codEscola), sizeof(int), 1, fp);
@@ -155,8 +174,21 @@ void EscreveRegistro(FILE* fp,Registro reg, int RRN){
 void arquivo_saida(Arquivo *entrada) {
 
 
-	FILE * fp;
-	fp = fopen(arquivoSaida, "wb");
+	FILE *fp, *indice_file;
+	fp = fopen(arquivoSaida, "r+");
+
+
+	
+	// Escreve o Cabeçalho do Arquivo de Indices
+	char status_indice = '1';
+	int noRaiz = 0;
+	int altura = 0;
+	int LastRRN = 0;
+
+	fwrite(&status_indice, sizeof(char), 1, indice_file);
+	fwrite(&noRaiz, sizeof(int), 1, indice_file);
+	fwrite(&altura, sizeof(int), 1, indice_file);
+	fwrite(&LastRRN, sizeof(int), 1, indice_file);
 	
 	//Escreve o Registro de Cabeçalho
 	
@@ -165,6 +197,7 @@ void arquivo_saida(Arquivo *entrada) {
 
 	// Escrevo no Arquivo de Saida os Registros Validos
 	for (int i = 0; i < entrada->n_registros_lidos; ++i){
+		
 		EscreveRegistro(fp, entrada->registros_lidos[i], i);
 	}	
 
@@ -525,6 +558,24 @@ bool existeReg(int RRN, FILE * fp){ //verifica se o registro é valido (isto é,
 	}
 
 	return true;
+
+}
+
+Pagina* pag(FILE* fp, int RRN){
+	long int posicao_atual = ftell(fp);
+	fseek(fp, (TAMANHOPAGINA*RRN) + T_CABECALHO_INDICE, SEEK_SET);
+
+	Pagina* pag = (Pagina*) malloc(sizeof(Pagina));
+
+	fread(&(pag->n), sizeof(int), 1, fp);
+	for(i = 0; i < pag->n; i++){
+		fread(&(pag.ponteiros[i]), sizeof(int), 1, fp);
+		fread(&(pag->elementos[i].chave), sizeof(int), 1, fp);
+		fread(&(pag->elementos[i].RRN), sizeof(int), 1, fp);
+
+	}
+
+	return Pagina;
 
 }
 
