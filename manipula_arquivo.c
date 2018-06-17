@@ -131,7 +131,40 @@ int bytesRestantes(FILE* fp, int RRN){
 }
 
 
-void BuscaRegistro(FILE* fp, )
+int BuscaRRN(FILE* fp, int RRN, int codEscola){
+	
+	if (RRN == -1){
+		return -1;
+	}
+
+	fseek(indice_file, (RRN*TAMANHOPAGINA) + T_CABECALHO_INDICE, SEEK_SET); // acessando o noRaiz
+
+	Pagina* pag = pag(fp, RRN);
+
+	for (i = 0; i < pag->n; i++){
+		if(codEscola == pag->elementos[i].chave){
+			return pag->elemento[i].RRN;
+		}else if(codEscola < pag->elementos[i].chave){
+			return BuscaRRN(fp, pag->ponteiros[i], codEscola);
+		} 
+	}
+	return BuscaRRN(fp, pag->ponteiros[i], codEscola);
+
+}
+
+int buscaRegistro(FILE* fp, int codEscola){
+	char status;
+	fread(&status, sizeof(status), 1, fp); // Lendo o status do arquivo de indices
+	if(status == 0){
+		printf("Arquivo Inconsistente.\n");
+		return -2;
+	}
+
+	int noRaiz;
+	fread(&noRaiz, sizeof(noRaiz), 1, fp); // Lendo o RRN do noRaiz no arquivo de indices
+
+	return buscaRRN(fp, noRaiz, codEscola);
+}
 
 //Funcao que receber o arquivo e um registro e escreve o registro no arquivo. Necessario saber o RRN
 void EscreveRegistro(FILE* fp,Registro reg, int RRN){ 
@@ -147,10 +180,6 @@ void EscreveRegistro(FILE* fp,Registro reg, int RRN){
 	fseek(indice_file, (noRaiz*TAMANHOPAGINA) + T_CABECALHO_INDICE, SEEK_SET); // acessando o noRaiz
 
 	Pagina* pag = pag(indice_file, noRaiz);
-
-
-
-
 
 	// Escrevo todo os campos do registro
 	fwrite(&(reg.codEscola), sizeof(int), 1, fp);

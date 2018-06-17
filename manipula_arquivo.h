@@ -81,6 +81,10 @@ void updateRegistro(FILE* saida, int codEscola,  char* dataInicio,  char* dataFi
 void CompactaArquivo();
 //Funcionalidade 9
 void allRegRemovidos();
+//Funcionalidade 12
+//Retorna o RRN caso o registro esteja no arquivo, -1 caso o registro nao foi encontrado, e -2 para inconsistencia no arquivo
+int buscaRegistro(FILE* fp, int codEscola); // Recebe o Arquivo de Indice e o Cod a ser procurado, e retorna o RRN do registro
+
 
 //Funcoes auxiliares
 FILE * abreArquivo(char *nome_arquivo); // abre o arquivo em modo r+

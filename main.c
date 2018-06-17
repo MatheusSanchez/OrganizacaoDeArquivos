@@ -102,6 +102,31 @@ int main (int argc, char ** argv) {
 	}else if(funcionalidade == 9){
 
 		allRegRemovidos();
+	}else if(funcionalidade == 12){
+
+		int codEscola = atoi(*(argv+2));
+
+		FILE* indice_file = fopen(arquivoIndice, "rb");
+
+		int RRN = BuscaRegistro(indice_file, codEscola);
+
+		fclose(indice_file);
+		
+		if(RRN == -1){
+			printf("Registro inexistente.\n");
+			return 0;
+		}else if(RRN == -2){
+			return 0;
+		}
+
+		FILE* saida = fopen(arquivoIndice, "rb");
+
+		Registro* r = reg(saida, RRN);
+
+		printf("%d %d %s %s %d %s %d %s %d %s\n", RRN, r->codEscola, r->dataInicio, r->dataFinal, r->indicador_tamanho_escola, r->nomeEscola, r->indicador_tamanho_municipio, r->municipio, r->indicador_tamanho_endereco, r->endereco);
+
+		fclose(saida);
+		
 	}
 
 	return 0;
