@@ -38,9 +38,11 @@ char * le_tamanho_variavel(FILE * posicao_atual, int * tamanho_campo) {
 	return palavra_lida;
 }
 
+
 Arquivo le_dados(char * nome_arquivo) { //funcao 1
 
 	FILE * fp = NULL;
+	
 	
 	int i =0;
 
@@ -130,56 +132,8 @@ int bytesRestantes(FILE* fp, int RRN){
 		return 0;
 }
 
-
-int BuscaRRN(FILE* fp, int RRN, int codEscola){
-	
-	if (RRN == -1){
-		return -1;
-	}
-
-	fseek(indice_file, (RRN*TAMANHOPAGINA) + T_CABECALHO_INDICE, SEEK_SET); // acessando o noRaiz
-
-	Pagina* pag = pag(fp, RRN);
-
-	for (i = 0; i < pag->n; i++){
-		if(codEscola == pag->elementos[i].chave){
-			return pag->elemento[i].RRN;
-		}else if(codEscola < pag->elementos[i].chave){
-			return BuscaRRN(fp, pag->ponteiros[i], codEscola);
-		} 
-	}
-	return BuscaRRN(fp, pag->ponteiros[i], codEscola);
-
-}
-
-int buscaRegistro(FILE* fp, int codEscola){
-	char status;
-	fread(&status, sizeof(status), 1, fp); // Lendo o status do arquivo de indices
-	if(status == 0){
-		printf("Arquivo Inconsistente.\n");
-		return -2;
-	}
-
-	int noRaiz;
-	fread(&noRaiz, sizeof(noRaiz), 1, fp); // Lendo o RRN do noRaiz no arquivo de indices
-
-	return buscaRRN(fp, noRaiz, codEscola);
-}
-
 //Funcao que receber o arquivo e um registro e escreve o registro no arquivo. Necessario saber o RRN
 void EscreveRegistro(FILE* fp,Registro reg, int RRN){ 
-
-	FILE* indice_file;
-	indice_file = fopen(arquivoIndice, "wb");
-
-	char status;
-	fread(&status, sizeof(status), 1, indice_file); // Lendo o status do arquivo de indices
-	int noRaiz;
-	fread(&noRaiz, sizeof(noRaiz), 1, indice_file); // Lendo o RRN do noRaiz no arquivo de indices
-
-	fseek(indice_file, (noRaiz*TAMANHOPAGINA) + T_CABECALHO_INDICE, SEEK_SET); // acessando o noRaiz
-
-	Pagina* pag = pag(indice_file, noRaiz);
 
 	// Escrevo todo os campos do registro
 	fwrite(&(reg.codEscola), sizeof(int), 1, fp);
@@ -200,24 +154,126 @@ void EscreveRegistro(FILE* fp,Registro reg, int RRN){
 
 }
 
+void insereIndice(int codEscola, int RRN){
+	FILE * ArquivoIndice = fopen(arquivoIndice,"r+");
+
+	char status;
+	//fscanf(ArquivoIndice, "%c", &status);
+	fread(&status, sizeof(char), 1, ArquivoIndice);
+	//printf("status %c\n", status);
+	//exit(0);
+	if(status == 0) // Arquivo Incosistente
+		return;
+
+	int noRaiz;
+	//fscanf(ArquivoIndice, "%d", &noRaiz);
+	fread(&noRaiz, sizeof(int), 1, ArquivoIndice);
+	//printf("noRaiz = %d\n", noRaiz );
+
+
+	if(noRaiz == -1){ // noRaiz nao existe
+		int ponteiroNULL =  -1;
+		int n = 1;
+		int altura;
+		int UltimoRRN;
+
+		fread(&altura, sizeof(int), 1, ArquivoIndice);
+		fread(&UltimoRRN, sizeof(int), 1, ArquivoIndice);
+
+		fwrite(&n, sizeof(int), 1, ArquivoIndice);
+		fwrite(&ponteiroNULL, sizeof(int), 1, ArquivoIndice);
+		fwrite(&codEscola, sizeof(int), 1, ArquivoIndice);
+		fwrite(&RRN, sizeof(int), 1, ArquivoIndice);
+		fwrite(&ponteiroNULL, sizeof(int), 1, ArquivoIndice);
+
+
+		fseek(ArquivoIndice,0,SEEK_SET); // ponteiro para o começo do arquivo
+		fread(&status, sizeof(char), 1, ArquivoIndice);
+		fread(&noRaiz, sizeof(int), 1, ArquivoIndice);
+		fread(&altura, sizeof(int), 1, ArquivoIndice);
+		fread(&UltimoRRN, sizeof(int), 1, ArquivoIndice);
+
+		fread(&n, sizeof(int), 1, ArquivoIndice);
+		fread(&ponteiroNULL, sizeof(int), 1, ArquivoIndice);
+		fread(&codEscola, sizeof(int), 1, ArquivoIndice);
+		fread(&RRN, sizeof(int), 1, ArquivoIndice);
+		fread(&ponteiroNULL, sizeof(int), 1, ArquivoIndice);
+
+
+		printf("ANTES\n");
+
+		printf("status = %c\n", status);
+		printf("noRaiz = %d\n", noRaiz);
+		printf("altura = %d\n", altura);
+		printf("UltimoRRN = %d\n", UltimoRRN);
+		printf("n = %d\n",n);
+		printf("ponteiro 1 = %d\n", ponteiroNULL);
+		printf("codEscola = %d \n",codEscola);
+		printf("RRN = %d\n", RRN);
+		printf("ponteiro 2 = %d\n", ponteiroNULL);
+
+		fseek(ArquivoIndice,0,SEEK_SET);
+		noRaiz = 0;
+		printf("\n");
+		fgetc(ArquivoIndice);	// tira status
+		fwrite(&noRaiz, sizeof(int), 1, ArquivoIndice);
+		fseek(ArquivoIndice,0,SEEK_SET); // ponteiro para o começo do arquivo
+		fread(&status, sizeof(char), 1, ArquivoIndice);
+		fread(&noRaiz, sizeof(int), 1, ArquivoIndice);
+		fread(&altura, sizeof(int), 1, ArquivoIndice);
+		fread(&UltimoRRN, sizeof(int), 1, ArquivoIndice);
+
+		fread(&n, sizeof(int), 1, ArquivoIndice);
+		fread(&ponteiroNULL, sizeof(int), 1, ArquivoIndice);
+		fread(&codEscola, sizeof(int), 1, ArquivoIndice);
+		fread(&RRN, sizeof(int), 1, ArquivoIndice);
+		fread(&ponteiroNULL, sizeof(int), 1, ArquivoIndice);
+
+
+		printf("DEPOIS\n");
+
+		printf("status = %c\n", status);
+		printf("noRaiz = %d\n", noRaiz);
+		printf("altura = %d\n", altura);
+		printf("UltimoRRN = %d\n", UltimoRRN);
+		printf("n = %d\n",n);
+		printf("ponteiro 1 = %d\n", ponteiroNULL);
+		printf("codEscola = %d \n",codEscola);
+		printf("RRN = %d\n", RRN);
+		printf("ponteiro 2 = %d\n", ponteiroNULL);
+
+		return;
+	}
+
+	fclose(ArquivoIndice);
+}
+
 void arquivo_saida(Arquivo *entrada) {
 
 
-	FILE *fp, *indice_file;
-	fp = fopen(arquivoSaida, "r+");
+	FILE * fp;
+	fp = fopen(arquivoSaida, "wb");
 
+	FILE * ArquivoIndice = fopen(arquivoIndice,"w");
 
+	char indiceStatus = '1';
+	int indiceNoraiz = -1;
+	int indiceAltura = -1;
+	int indiceUltimoRrn = -1;
+
+	//fprintf(ArquivoIndice, "%c", indiceStatus);
+	//fprintf(ArquivoIndice, "%d", indiceNoraiz);
+	//fprintf(ArquivoIndice, "%d", indiceAltura);
+	//fprintf(ArquivoIndice, "%d", indiceUltimoRrn);
+
+	fwrite(&indiceStatus, sizeof(char), 1, ArquivoIndice);
+	fwrite(&indiceNoraiz, sizeof(int), 1, ArquivoIndice);
+	fwrite(&indiceAltura, sizeof(int), 1, ArquivoIndice);
+	fwrite(&indiceUltimoRrn, sizeof(int), 1, ArquivoIndice);
 	
-	// Escreve o Cabeçalho do Arquivo de Indices
-	char status_indice = '1';
-	int noRaiz = 0;
-	int altura = 0;
-	int LastRRN = 0;
+	fclose(ArquivoIndice);
 
-	fwrite(&status_indice, sizeof(char), 1, indice_file);
-	fwrite(&noRaiz, sizeof(int), 1, indice_file);
-	fwrite(&altura, sizeof(int), 1, indice_file);
-	fwrite(&LastRRN, sizeof(int), 1, indice_file);
+
 	
 	//Escreve o Registro de Cabeçalho
 	
@@ -226,8 +282,9 @@ void arquivo_saida(Arquivo *entrada) {
 
 	// Escrevo no Arquivo de Saida os Registros Validos
 	for (int i = 0; i < entrada->n_registros_lidos; ++i){
-		
 		EscreveRegistro(fp, entrada->registros_lidos[i], i);
+		insereIndice(entrada->registros_lidos[i].codEscola,i); // cod escola e RRN
+		//exit(0);
 	}	
 
 	fechaArquivo(fp);
@@ -587,24 +644,6 @@ bool existeReg(int RRN, FILE * fp){ //verifica se o registro é valido (isto é,
 	}
 
 	return true;
-
-}
-
-Pagina* pag(FILE* fp, int RRN){
-	long int posicao_atual = ftell(fp);
-	fseek(fp, (TAMANHOPAGINA*RRN) + T_CABECALHO_INDICE, SEEK_SET);
-
-	Pagina* pag = (Pagina*) malloc(sizeof(Pagina));
-
-	fread(&(pag->n), sizeof(int), 1, fp);
-	for(i = 0; i < pag->n; i++){
-		fread(&(pag.ponteiros[i]), sizeof(int), 1, fp);
-		fread(&(pag->elementos[i].chave), sizeof(int), 1, fp);
-		fread(&(pag->elementos[i].RRN), sizeof(int), 1, fp);
-
-	}
-
-	return Pagina;
 
 }
 

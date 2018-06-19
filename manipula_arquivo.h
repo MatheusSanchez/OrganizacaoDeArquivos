@@ -10,22 +10,17 @@
 #define true 1
 #define false 0 
 #define arquivoSaida "saida.bin"
-#define arquivoEntrada "entrada.csv"
 #define arquivoIndice "indice.bin"
+#define arquivoEntrada "entrada.csv"
 #define TAMANHOREGISTRO 112
-#define TAMANHOPAGINA 116
 #define T_CABECALHO 5
-#define T_CABECALHO_INDICE 13
 
 struct elemento{
-
-int chave;
-int RRN;
-
-
+	int chave;
+	int RRN;
 };
 
-typedef struct elemento Elemento
+typedef struct elemento Elemento;
 
 struct pagina{
 
@@ -81,10 +76,6 @@ void updateRegistro(FILE* saida, int codEscola,  char* dataInicio,  char* dataFi
 void CompactaArquivo();
 //Funcionalidade 9
 void allRegRemovidos();
-//Funcionalidade 12
-//Retorna o RRN caso o registro esteja no arquivo, -1 caso o registro nao foi encontrado, e -2 para inconsistencia no arquivo
-int buscaRegistro(FILE* fp, int codEscola); // Recebe o Arquivo de Indice e o Cod a ser procurado, e retorna o RRN do registro
-
 
 //Funcoes auxiliares
 FILE * abreArquivo(char *nome_arquivo); // abre o arquivo em modo r+
